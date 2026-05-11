@@ -8,6 +8,7 @@
         "@gluestack-ui/config": "^1.1.20",
         "@gluestack-ui/themed": "^1.1.73",
         "@react-native-async-storage/async-storage": "^3.0.2",
+        "@react-native-async-storage/expo-with-async-storage": "^1.0.0",
         "expo": "~54.0.33",
         "expo-barcode-scanner": "^13.0.1",
         "expo-status-bar": "~3.0.9",
@@ -441,6 +442,8 @@
     "@react-native-aria/utils": ["@react-native-aria/utils@0.2.12", "https://registry.npmmirror.com/@react-native-aria/utils/-/utils-0.2.12.tgz", { "dependencies": { "@react-aria/ssr": "^3.0.1", "@react-aria/utils": "^3.3.0" }, "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-752/tQ5fjDdc/3Gw8cKqml4NucfiFrO8wPmlg0bBgaCvfQDJaUMi4grme3/fBPCUoK2wk9/yJHfwkv45Gi5Eew=="],
 
     "@react-native-async-storage/async-storage": ["@react-native-async-storage/async-storage@3.0.2", "https://registry.npmmirror.com/@react-native-async-storage/async-storage/-/async-storage-3.0.2.tgz", { "dependencies": { "idb": "8.0.3" }, "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-XP0zDIl+1XoeuQ7f878qXKdl77zLwzLALPpxvNRc7ZtDh9ew36WSvOdQOhFkexMySapFAWxEbZxS8K8J2DU4eg=="],
+
+    "@react-native-async-storage/expo-with-async-storage": ["@react-native-async-storage/expo-with-async-storage@1.0.0", "https://registry.npmmirror.com/@react-native-async-storage/expo-with-async-storage/-/expo-with-async-storage-1.0.0.tgz", { "peerDependencies": { "expo": ">=53.0.0" }, "optionalPeers": ["expo"] }, "sha512-9LsEPqOC7XltpDWsGm7wa9KHN4tUyDRTT5vS9XSkYYNlBkYPBq3SHdKpzT2VC6emQLzHyo7ZSFyvjAo4WkZPPg=="],
 
     "@react-native/assets-registry": ["@react-native/assets-registry@0.81.5", "https://registry.npmmirror.com/@react-native/assets-registry/-/assets-registry-0.81.5.tgz", {}, "sha512-705B6x/5Kxm1RKRvSv0ADYWm5JOnoiQ1ufW7h8uu2E6G9Of/eE6hP/Ivw3U5jI16ERqZxiKQwk34VJbB0niX9w=="],
 

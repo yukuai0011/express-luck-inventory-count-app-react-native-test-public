@@ -27,6 +27,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
+    "plugins": ["@react-native-async-storage/expo-with-async-storage"],
     "web": {
       "favicon": "./assets/favicon.png"
     }
