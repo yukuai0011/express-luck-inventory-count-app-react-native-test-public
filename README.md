@@ -19,7 +19,7 @@ Offline-first inventory recording app rebuilt with React Native, Expo, Gluestack
 - Gluestack UI
 - Bun
 - AsyncStorage
-- Expo Barcode Scanner
+- Expo Camera (barcode scanning)
 - AsyncStorage Expo config plugin (adds Android local Maven repo)
 
 ## Run Locally

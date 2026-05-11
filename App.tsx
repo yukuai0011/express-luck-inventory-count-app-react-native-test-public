@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
   Badge,
@@ -145,16 +145,16 @@ const ScanModal = ({
             </Button>
           </HStack>
           <View style={styles.scannerContainer}>
-            <BarCodeScanner
+            <CameraView
               style={StyleSheet.absoluteFillObject}
-              barCodeTypes={
-                mode === 'qr' ? [BarCodeScanner.Constants.BarCodeType.qr] : undefined
+              barcodeScannerSettings={
+                mode === 'qr' ? { barcodeTypes: ['qr'] } : undefined
               }
-              onBarCodeScanned={({ data }) => {
+              onBarcodeScanned={(event: BarcodeScanningResult) => {
                 if (handled) return;
-                if (!data) return;
+                if (!event?.data) return;
                 setHandled(true);
-                const shouldClose = onScan(data);
+                const shouldClose = onScan(event.data);
                 if (shouldClose) {
                   onClose();
                 } else {
@@ -171,6 +171,7 @@ const ScanModal = ({
 
 export default function App() {
   const toast = useToast();
+  const [permission, requestPermission] = useCameraPermissions();
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
   const [pasteJson, setPasteJson] = useState('');
@@ -273,8 +274,9 @@ export default function App() {
   );
 
   const requestCameraPermission = useCallback(async () => {
-    const { status } = await BarCodeScanner.requestPermissionsAsync();
-    if (status !== 'granted') {
+    if (permission?.granted) return true;
+    const response = await requestPermission();
+    if (response.status !== 'granted') {
       Alert.alert(
         'Info',
         'Camera scanning is available on Android, iOS, and the Web. On this platform, please paste JSON or type the package number.'
@@ -282,7 +284,7 @@ export default function App() {
       return false;
     }
     return true;
-  }, []);
+  }, [permission?.granted, requestPermission]);
 
   const startScan = useCallback(
     async (mode: ScanMode) => {
