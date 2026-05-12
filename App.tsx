@@ -5,6 +5,7 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -463,7 +464,11 @@ export default function App() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <Box flex={1} bg="$backgroundLight0">
-          <View style={styles.scrollWrapper}>
+          <ScrollView
+            style={styles.scrollWrapper}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
             <VStack space="md" px="$4" py="$4">
               <Heading size="lg">Inventory Scanner PoC</Heading>
 
@@ -615,7 +620,7 @@ export default function App() {
                 </VStack>
               </Box>
             </VStack>
-          </View>
+          </ScrollView>
         </Box>
 
         {scanMode ? (
@@ -638,6 +643,9 @@ const styles = StyleSheet.create({
   },
   scrollWrapper: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   card: {
     borderWidth: 1,
