@@ -37,6 +37,14 @@ bun run ios
 bun run web
 ```
 
+## Build Web Locally
+
+```bash
+bun run build:web
+```
+
+The build exports the Expo web app to `dist/` and adds PWA files (`manifest.webmanifest`, `sw.js`, `.nojekyll`, and app icons).
+
 ## Build APK Locally (debug)
 
 ```bash
@@ -53,11 +61,17 @@ android/app/build/outputs/apk/debug/app-debug.apk
 
 ## GitHub Actions
 
-Workflow: `.github/workflows/android-apk.yml`
+Workflows:
 
-- Runs on `push` and `pull_request`
-- Prebuilds Android and builds a debug APK
-- Uploads `app-debug.apk` as a CI artifact
+- `.github/workflows/github-pages.yml`
+  - Runs on `push` and `workflow_dispatch`
+  - Installs dependencies with Bun
+  - Builds the Expo web app and deploys `dist/` to GitHub Pages
+  - Uses `/${repo}` as the Pages base path by default; set repository variable `EXPO_BASE_URL` to override it, for example `/` for a custom root domain
+- `.github/workflows/android-apk.yml`
+  - Runs on `push` and `pull_request`
+  - Prebuilds Android and builds a debug APK
+  - Uploads `app-debug.apk` as a CI artifact
 
 ## Data & Privacy
 

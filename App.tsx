@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+/** @format */
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Modal,
@@ -8,11 +10,15 @@ import {
   ScrollView,
   StyleSheet,
   View,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
-import { MaterialIcons } from '@expo/vector-icons';
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  CameraView,
+  BarcodeScanningResult,
+  useCameraPermissions,
+} from "expo-camera";
+import { MaterialIcons } from "@expo/vector-icons";
 import {
   Badge,
   BadgeText,
@@ -31,8 +37,8 @@ import {
   TextareaInput,
   useToast,
   VStack,
-} from '@gluestack-ui/themed';
-import { config } from '@gluestack-ui/config';
+} from "@gluestack-ui/themed";
+import { config } from "@gluestack-ui/config";
 
 type RecordingInfo = {
   orderNo: string;
@@ -52,14 +58,14 @@ type OutboxItem = {
   ts: string;
 };
 
-type ScanMode = 'qr' | 'barcode';
+type ScanMode = "qr" | "barcode";
 
-const STORAGE_PROFILE = 'inventory_profile';
-const STORAGE_OUTBOX = 'inventory_outbox';
+const STORAGE_PROFILE = "inventory_profile";
+const STORAGE_OUTBOX = "inventory_outbox";
 
 const sanitizeEndpoint = (input: string) => {
   let value = input.trim();
-  if (value.startsWith('<') && value.endsWith('>')) {
+  if (value.startsWith("<") && value.endsWith(">")) {
     value = value.slice(1, -1);
   }
   return value;
@@ -69,7 +75,7 @@ const uuidv4 = () => {
   const rand = (max: number) =>
     (Date.now() + Math.floor(Math.random() * max)) % max;
   const hex = (num: number, width: number) =>
-    num.toString(16).padStart(width, '0');
+    num.toString(16).padStart(width, "0");
   const p1 = hex(rand(0xffffffff), 8);
   const p2 = hex(rand(0xffff), 4);
   const p3 = hex((rand(0x0fff) & 0x0fff) | 0x4000, 4);
@@ -86,9 +92,11 @@ const parseJson = (text: string) => {
   }
 };
 
-const parseRecordingInfo = (value: Record<string, unknown>): RecordingInfo | null => {
-  const orderNo = `${value.orderNo ?? ''}`.trim();
-  const locationCode = `${value.locationCode ?? ''}`.trim();
+const parseRecordingInfo = (
+  value: Record<string, unknown>,
+): RecordingInfo | null => {
+  const orderNo = `${value.orderNo ?? ""}`.trim();
+  const locationCode = `${value.locationCode ?? ""}`.trim();
   const recordingNo = Number(value.recordingNo);
   if (!orderNo || !locationCode || Number.isNaN(recordingNo)) {
     return null;
@@ -100,7 +108,8 @@ const parseRecordingInfo = (value: Record<string, unknown>): RecordingInfo | nul
   };
 };
 
-const pillVariant = (ok: boolean) => (ok ? '$success600' : '$backgroundDark500');
+const pillVariant = (ok: boolean) =>
+  ok ? "$success600" : "$backgroundDark500";
 
 const SummaryText = ({ children }: { children: string }) => (
   <Box
@@ -139,7 +148,12 @@ const ScanModal = ({
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <Box flex={1} bg="$backgroundLight0">
         <SafeAreaView style={styles.safeArea}>
-          <HStack alignItems="center" justifyContent="space-between" px="$4" py="$3">
+          <HStack
+            alignItems="center"
+            justifyContent="space-between"
+            px="$4"
+            py="$3"
+          >
             <Heading size="md">{title}</Heading>
             <Button variant="outline" onPress={onClose} size="sm">
               <ButtonText>Close</ButtonText>
@@ -149,7 +163,7 @@ const ScanModal = ({
             <CameraView
               style={StyleSheet.absoluteFillObject}
               barcodeScannerSettings={
-                mode === 'qr' ? { barcodeTypes: ['qr'] } : undefined
+                mode === "qr" ? { barcodeTypes: ["qr"] } : undefined
               }
               onBarcodeScanned={(event: BarcodeScanningResult) => {
                 if (handled) return;
@@ -175,30 +189,30 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
-  const [pasteJson, setPasteJson] = useState('');
-  const [bearerToken, setBearerToken] = useState('');
-  const [packageNo, setPackageNo] = useState('');
+  const [pasteJson, setPasteJson] = useState("");
+  const [bearerToken, setBearerToken] = useState("");
+  const [packageNo, setPackageNo] = useState("");
   const [intact, setIntact] = useState(true);
   const [quantity, setQuantity] = useState(0);
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [outbox, setOutbox] = useState<OutboxItem[]>([]);
   const [scanMode, setScanMode] = useState<ScanMode | null>(null);
-  const [scanTitle, setScanTitle] = useState('');
+  const [scanTitle, setScanTitle] = useState("");
 
   const hasBothScans = useMemo(
     () => Boolean(scannedApi && scannedInfo),
-    [scannedApi, scannedInfo]
+    [scannedApi, scannedInfo],
   );
 
   const profileSummary = useMemo(() => {
-    if (!profile) return '(No profile saved)';
+    if (!profile) return "(No profile saved)";
     const safe = {
-      apiEndpoint: profile.apiEndpoint ?? '',
-      orderNo: profile.orderNo ?? '',
-      recordingNo: profile.recordingNo ?? '',
-      locationCode: profile.locationCode ?? '',
-      bearerToken: profile.bearerToken ? '(stored)' : '(none)',
+      apiEndpoint: profile.apiEndpoint ?? "",
+      orderNo: profile.orderNo ?? "",
+      recordingNo: profile.recordingNo ?? "",
+      locationCode: profile.locationCode ?? "",
+      bearerToken: profile.bearerToken ? "(stored)" : "(none)",
     };
     return JSON.stringify(safe, null, 2);
   }, [profile]);
@@ -206,7 +220,7 @@ export default function App() {
   const showToast = useCallback(
     (message: string) => {
       toast.show({
-        placement: 'top',
+        placement: "top",
         duration: 2000,
         render: () => (
           <Box bg="$backgroundDark900" px="$3" py="$2" borderRadius="$md">
@@ -215,7 +229,7 @@ export default function App() {
         ),
       });
     },
-    [toast]
+    [toast],
   );
 
   const loadProfile = useCallback(async () => {
@@ -256,31 +270,28 @@ export default function App() {
     void loadOutbox();
   }, [loadOutbox, loadProfile]);
 
-  const handleQrText = useCallback(
-    (text: string) => {
-      const obj = parseJson(text);
-      if (!obj) return false;
-      if (typeof obj.apiEndpoint === 'string') {
-        setScannedApi(sanitizeEndpoint(obj.apiEndpoint));
-        return true;
-      }
-      const info = parseRecordingInfo(obj);
-      if (info) {
-        setScannedInfo(info);
-        return true;
-      }
-      return false;
-    },
-    []
-  );
+  const handleQrText = useCallback((text: string) => {
+    const obj = parseJson(text);
+    if (!obj) return false;
+    if (typeof obj.apiEndpoint === "string") {
+      setScannedApi(sanitizeEndpoint(obj.apiEndpoint));
+      return true;
+    }
+    const info = parseRecordingInfo(obj);
+    if (info) {
+      setScannedInfo(info);
+      return true;
+    }
+    return false;
+  }, []);
 
   const requestCameraPermission = useCallback(async () => {
     if (permission?.granted) return true;
     const response = await requestPermission();
-    if (response.status !== 'granted') {
+    if (response.status !== "granted") {
       Alert.alert(
-        'Info',
-        'Camera scanning is available on Android, iOS, and the Web. On this platform, please paste JSON or type the package number.'
+        "Info",
+        "Camera scanning is available on Android, iOS, and the Web. On this platform, please paste JSON or type the package number.",
       );
       return false;
     }
@@ -290,19 +301,19 @@ export default function App() {
   const startScan = useCallback(
     async (mode: ScanMode) => {
       if (!(await requestCameraPermission())) return;
-      setScanTitle(mode === 'qr' ? 'Scan QR' : 'Scan Package Barcode');
+      setScanTitle(mode === "qr" ? "Scan QR" : "Scan Package Barcode");
       setScanMode(mode);
     },
-    [requestCameraPermission]
+    [requestCameraPermission],
   );
 
   const onScanResult = useCallback(
     (data: string) => {
       if (!scanMode) return true;
-      if (scanMode === 'qr') {
+      if (scanMode === "qr") {
         const ok = handleQrText(data);
         if (!ok) {
-          showToast('Not JSON or unexpected structure; keep scanning…');
+          showToast("Not JSON or unexpected structure; keep scanning…");
         }
         return ok;
       }
@@ -312,13 +323,13 @@ export default function App() {
       }
       return true;
     },
-    [handleQrText, scanMode, showToast]
+    [handleQrText, scanMode, showToast],
   );
 
   const onDetectPaste = useCallback(() => {
     const ok = handleQrText(pasteJson.trim());
     if (!ok) {
-      showToast('Not valid JSON or unexpected format');
+      showToast("Not valid JSON or unexpected format");
     }
   }, [handleQrText, pasteJson, showToast]);
 
@@ -333,7 +344,7 @@ export default function App() {
     };
     await AsyncStorage.setItem(STORAGE_PROFILE, JSON.stringify(nextProfile));
     setProfile(nextProfile);
-    showToast('Profile saved');
+    showToast("Profile saved");
   }, [bearerToken, scannedApi, scannedInfo, showToast]);
 
   const onClearSavedProfile = useCallback(async () => {
@@ -342,19 +353,19 @@ export default function App() {
   }, []);
 
   const onSubmit = useCallback(async () => {
-    setResult('');
+    setResult("");
     if (!profile) {
-      showToast('No profile saved. Please create and save a profile first.');
+      showToast("No profile saved. Please create and save a profile first.");
       return;
     }
     const pkg = packageNo.trim();
     if (!pkg) {
-      showToast('Package number is required.');
+      showToast("Package number is required.");
       return;
     }
-    const url = sanitizeEndpoint(profile.apiEndpoint ?? '');
-    if (!url.startsWith('http')) {
-      showToast('Profile API endpoint is invalid.');
+    const url = sanitizeEndpoint(profile.apiEndpoint ?? "");
+    if (!url.startsWith("http")) {
+      showToast("Profile API endpoint is invalid.");
       return;
     }
     const payload = {
@@ -367,30 +378,30 @@ export default function App() {
     };
     try {
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'x-ms-client-tracking-id': uuidv4(),
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "x-ms-client-tracking-id": uuidv4(),
       };
-      const token = (profile.bearerToken ?? '').toString().trim();
+      const token = (profile.bearerToken ?? "").toString().trim();
       if (token) headers.Authorization = `Bearer ${token}`;
       const resp = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(payload),
       });
-      const ct = resp.headers.get('content-type') ?? '';
-      let bodyOut = '';
-      if (ct.includes('application/json')) {
+      const ct = resp.headers.get("content-type") ?? "";
+      let bodyOut = "";
+      if (ct.includes("application/json")) {
         const json = await resp.json();
         bodyOut = JSON.stringify(json, null, 2);
       } else {
         bodyOut = await resp.text();
       }
       setResult(
-        `POST ${url}\nPayload:\n${JSON.stringify(payload, null, 2)}\n\nResponse:\n{\n  "status": ${resp.status},\n  "ok": ${resp.status >= 200 && resp.status < 300},\n  "body": ${JSON.stringify(bodyOut)}\n}`
+        `POST ${url}\nPayload:\n${JSON.stringify(payload, null, 2)}\n\nResponse:\n{\n  "status": ${resp.status},\n  "ok": ${resp.status >= 200 && resp.status < 300},\n  "body": ${JSON.stringify(bodyOut)}\n}`,
       );
     } catch (error) {
-      const token = (profile.bearerToken ?? '').toString().trim();
+      const token = (profile.bearerToken ?? "").toString().trim();
       const queued: OutboxItem = {
         url,
         headers: {
@@ -402,34 +413,34 @@ export default function App() {
       const nextOutbox = [...outbox, queued];
       await saveOutbox(nextOutbox);
       setResult(
-        `Request failed (likely offline). Saved to queue.\n${(error as Error).toString()}`
+        `Request failed (likely offline). Saved to queue.\n${(error as Error).toString()}`,
       );
     }
   }, [intact, outbox, packageNo, profile, quantity, saveOutbox, showToast]);
 
   const onSyncNow = useCallback(async () => {
     if (!outbox.length) {
-      showToast('Nothing synced');
+      showToast("Nothing synced");
       return;
     }
     let success = 0;
     const remaining: OutboxItem[] = [];
     for (const item of outbox) {
-      const url = item.url ?? '';
-      if (!url.startsWith('http')) {
+      const url = item.url ?? "";
+      if (!url.startsWith("http")) {
         remaining.push(item);
         continue;
       }
       try {
         const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'x-ms-client-tracking-id': uuidv4(),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "x-ms-client-tracking-id": uuidv4(),
         };
-        const auth = item.headers?.Authorization ?? '';
+        const auth = item.headers?.Authorization ?? "";
         if (auth) headers.Authorization = auth;
         const resp = await fetch(url, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(item.payload ?? {}),
         });
@@ -443,15 +454,15 @@ export default function App() {
       }
     }
     await saveOutbox(remaining);
-    showToast(success > 0 ? `Synced ${success} item(s)` : 'Nothing synced');
+    showToast(success > 0 ? `Synced ${success} item(s)` : "Nothing synced");
   }, [outbox, saveOutbox, showToast]);
 
   const onClearOutbox = useCallback(async () => {
-    Alert.alert('Confirm', 'Clear all pending submissions?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Confirm", "Clear all pending submissions?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'OK',
-        style: 'destructive',
+        text: "OK",
+        style: "destructive",
         onPress: async () => {
           await saveOutbox([]);
         },
@@ -476,22 +487,23 @@ export default function App() {
                 <VStack space="sm">
                   <Heading size="md">1) Recording Profile</Heading>
                   <Text>
-                    Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
+                    Scan two QR codes in any order to establish a profile: API
+                    Endpoint and Recording Info. Then save.
                   </Text>
                   <HStack space="sm">
                     <Badge bg={pillVariant(Boolean(scannedApi))}>
                       <BadgeText color="$textLight0">
-                        API Endpoint: {scannedApi ? 'ready' : 'missing'}
+                        API Endpoint: {scannedApi ? "ready" : "missing"}
                       </BadgeText>
                     </Badge>
                     <Badge bg={pillVariant(Boolean(scannedInfo))}>
                       <BadgeText color="$textLight0">
-                        Recording Info: {scannedInfo ? 'ready' : 'missing'}
+                        Recording Info: {scannedInfo ? "ready" : "missing"}
                       </BadgeText>
                     </Badge>
                   </HStack>
                   <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={() => startScan('qr')} size="sm">
+                    <Button onPress={() => startScan("qr")} size="sm">
                       <ButtonText>Scan QR</ButtonText>
                     </Button>
                     <Button
@@ -533,10 +545,18 @@ export default function App() {
                   </Input>
 
                   <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
+                    <Button
+                      onPress={onSaveProfile}
+                      isDisabled={!hasBothScans}
+                      size="sm"
+                    >
                       <ButtonText>Save Profile</ButtonText>
                     </Button>
-                    <Button onPress={onClearSavedProfile} variant="outline" size="sm">
+                    <Button
+                      onPress={onClearSavedProfile}
+                      variant="outline"
+                      size="sm"
+                    >
                       <ButtonText>Clear Saved Profile</ButtonText>
                     </Button>
                   </HStack>
@@ -560,7 +580,11 @@ export default function App() {
                         />
                       </Input>
                     </Box>
-                    <Button onPress={() => startScan('barcode')} variant="outline" size="sm">
+                    <Button
+                      onPress={() => startScan("barcode")}
+                      variant="outline"
+                      size="sm"
+                    >
                       <ButtonText>Scan</ButtonText>
                     </Button>
                   </HStack>
@@ -570,13 +594,23 @@ export default function App() {
                     <Text>Package intact</Text>
                   </HStack>
 
-                  <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    opacity={intact ? 0.5 : 1}
+                  >
                     <Pressable
-                      onPress={() => setQuantity((value) => Math.max(0, value - 1))}
+                      onPress={() =>
+                        setQuantity((value) => Math.max(0, value - 1))
+                      }
                       disabled={intact}
                       style={styles.iconButton}
                     >
-                      <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
+                      <MaterialIcons
+                        name="remove-circle-outline"
+                        size={26}
+                        color="#444"
+                      />
                     </Pressable>
                     <Box width={120}>
                       <Input isDisabled={intact}>
@@ -593,7 +627,11 @@ export default function App() {
                       disabled={intact}
                       style={styles.iconButton}
                     >
-                      <MaterialIcons name="add-circle-outline" size={26} color="#444" />
+                      <MaterialIcons
+                        name="add-circle-outline"
+                        size={26}
+                        color="#444"
+                      />
                     </Pressable>
                   </HStack>
 
@@ -601,7 +639,9 @@ export default function App() {
                     <ButtonText>Submit</ButtonText>
                   </Button>
 
-                  {result ? <SummaryText>{result}</SummaryText> : null}
+                  {result ?
+                    <SummaryText>{result}</SummaryText>
+                  : null}
                 </VStack>
               </Box>
 
@@ -623,7 +663,7 @@ export default function App() {
           </ScrollView>
         </Box>
 
-        {scanMode ? (
+        {scanMode ?
           <ScanModal
             visible={Boolean(scanMode)}
             title={scanTitle}
@@ -631,7 +671,7 @@ export default function App() {
             onClose={() => setScanMode(null)}
             onScan={onScanResult}
           />
-        ) : null}
+        : null}
       </SafeAreaView>
     </GluestackUIProvider>
   );
@@ -649,14 +689,14 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#e2e8f0",
     borderRadius: 12,
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   scannerContainer: {
     flex: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginHorizontal: 16,
     borderRadius: 12,
   },
@@ -664,7 +704,11 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   codeText: {
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    fontFamily: Platform.select({
+      ios: "Menlo",
+      android: "monospace",
+      default: "monospace",
+    }),
     fontSize: 12,
   },
 });
