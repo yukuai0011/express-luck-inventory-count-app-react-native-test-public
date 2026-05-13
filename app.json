@@ -19,6 +19,7 @@
       }
     },
     "android": {
+      "package": "com.anonymous.expressluckinventory",
       "permissions": ["CAMERA"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

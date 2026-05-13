@@ -11,6 +11,7 @@ jobs:
   android-release:
     runs-on: ubuntu-latest
     env:
+      CI: "1"
       EXPO_NO_TELEMETRY: "1"
     steps:
       - name: Checkout
@@ -54,7 +55,7 @@ jobs:
         run: bun install
 
       - name: Prebuild Android
-        run: bunx expo prebuild --platform android --non-interactive
+        run: bunx expo prebuild --platform android
 
       - name: Generate temporary release keystore
         run: |

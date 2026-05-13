@@ -48,7 +48,7 @@ The build exports the Expo web app to `dist/` and adds PWA files (`manifest.webm
 ## Build APK Locally (debug)
 
 ```bash
-bunx expo prebuild --platform android --non-interactive
+CI=1 bunx expo prebuild --platform android
 cd android
 ./gradlew assembleDebug
 ```
