@@ -29,7 +29,8 @@
     },
     "plugins": ["@react-native-async-storage/expo-with-async-storage"],
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "basePath": "/express-luck-inventory-count-app-react-native-test-public"
     }
   }
 }
