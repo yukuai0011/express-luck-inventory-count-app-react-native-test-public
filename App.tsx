@@ -28,9 +28,11 @@ import {
   Switch,
   Badge,
   BadgeText,
+  Input,
+  InputInput,
+  Textarea,
+  TextareaInput,
 } from '@gluestack-ui/react';
-import { Input } from '@gluestack-ui/react';
-import { Textarea } from '@gluestack-ui/react';
 
 type RecordingInfo = {
   orderNo: string;
@@ -244,7 +246,7 @@ const ProfileSection = ({
         <Divider my="$2" />
         <Text>Advanced: Optional Bearer Token</Text>
         <Input>
-          <InputField
+          <InputInput
             value={bearerToken}
             onChangeText={(v) => {}}
             placeholder="Bearer token (optional)"
@@ -300,7 +302,7 @@ const WorkSection = ({
         <HStack space="sm" alignItems="center">
           <Box flex={1}>
             <Input>
-              <InputField
+              <InputInput
                 value={packageNo}
                 onChangeText={onSetPackageNo}
                 placeholder="Scan or type package number"
@@ -327,7 +329,7 @@ const WorkSection = ({
           </Pressable>
           <Box width={120}>
             <Input isDisabled={intact}>
-              <InputField
+              <InputInput
                 value={String(quantity)}
                 editable={false}
                 textAlign="center"
