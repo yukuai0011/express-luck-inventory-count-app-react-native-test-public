@@ -14,25 +14,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-  Badge,
-  BadgeText,
   Box,
+  Text,
   Button,
   ButtonText,
+  Heading,
+  VStack,
+  HStack,
   Divider,
   GluestackUIProvider,
-  Heading,
-  HStack,
-  Input,
-  InputField,
+  useToast,
+  config,
   Switch,
-  Text,
+  Badge,
+  BadgeText,
+  Input,
+  InputInput,
   Textarea,
   TextareaInput,
-  useToast,
-  VStack,
-} from '@gluestack-ui/themed';
-import { config } from '@gluestack-ui/config';
+} from '@gluestack-ui/react';
 
 type RecordingInfo = {
   orderNo: string;
@@ -167,6 +167,217 @@ const ScanModal = ({
         </SafeAreaView>
       </Box>
     </Modal>
+  );
+};
+
+type ProfileSectionProps = {
+  scannedApi: string | null;
+  scannedInfo: RecordingInfo | null;
+  pasteJson: string;
+  bearerToken: string;
+  profile: Profile | null;
+  hasBothScans: boolean;
+  profileSummary: string;
+  onSetPasteJson: (v: string) => void;
+  onDetectPaste: () => void;
+  onSaveProfile: () => void;
+  onClearSavedProfile: () => void;
+  onStartScan: (mode: ScanMode) => void;
+  onReset: () => void;
+};
+
+const ProfileSection = ({
+  scannedApi,
+  scannedInfo,
+  pasteJson,
+  bearerToken,
+  profile,
+  hasBothScans,
+  profileSummary,
+  onSetPasteJson,
+  onDetectPaste,
+  onSaveProfile,
+  onClearSavedProfile,
+  onStartScan,
+  onReset,
+}: ProfileSectionProps) => {
+  return (
+    <Box style={styles.card}>
+      <VStack space="sm">
+        <Heading size="md">1) Recording Profile</Heading>
+        <Text>
+          Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
+        </Text>
+        <HStack space="sm">
+          <Badge bg={pillVariant(Boolean(scannedApi))}>
+            <BadgeText color="$textLight0">
+              API Endpoint: {scannedApi ? 'ready' : 'missing'}
+            </BadgeText>
+          </Badge>
+          <Badge bg={pillVariant(Boolean(scannedInfo))}>
+            <BadgeText color="$textLight0">
+              Recording Info: {scannedInfo ? 'ready' : 'missing'}
+            </BadgeText>
+          </Badge>
+        </HStack>
+        <HStack space="sm" flexWrap="wrap">
+          <Button onPress={() => onStartScan('qr')} size="sm">
+            <ButtonText>Scan QR</ButtonText>
+          </Button>
+          <Button onPress={onReset} variant="outline" size="sm">
+            <ButtonText>Reset</ButtonText>
+          </Button>
+        </HStack>
+
+        <Divider my="$2" />
+        <Text>Paste JSON instead</Text>
+        <Textarea>
+          <TextareaInput
+            value={pasteJson}
+            onChangeText={onSetPasteJson}
+            placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
+            autoCapitalize="none"
+          />
+        </Textarea>
+        <Button onPress={onDetectPaste} variant="outline" size="sm">
+          <ButtonText>Detect</ButtonText>
+        </Button>
+
+        <Divider my="$2" />
+        <Text>Advanced: Optional Bearer Token</Text>
+        <Input>
+          <InputInput
+            value={bearerToken}
+            onChangeText={(v) => {}}
+            placeholder="Bearer token (optional)"
+            secureTextEntry
+            autoCapitalize="none"
+          />
+        </Input>
+
+        <HStack space="sm" flexWrap="wrap">
+          <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
+            <ButtonText>Save Profile</ButtonText>
+          </Button>
+          <Button onPress={onClearSavedProfile} variant="outline" size="sm">
+            <ButtonText>Clear Saved Profile</ButtonText>
+          </Button>
+        </HStack>
+
+        <Text>Current Profile</Text>
+        <SummaryText>{profileSummary}</SummaryText>
+      </VStack>
+    </Box>
+  );
+};
+
+type WorkSectionProps = {
+  packageNo: string;
+  intact: boolean;
+  quantity: number;
+  result: string;
+  onSetPackageNo: (v: string) => void;
+  onSetIntact: (v: boolean) => void;
+  onSetQuantity: (v: number) => void;
+  onSubmit: () => void;
+  onStartScan: (mode: ScanMode) => void;
+};
+
+const WorkSection = ({
+  packageNo,
+  intact,
+  quantity,
+  result,
+  onSetPackageNo,
+  onSetIntact,
+  onSetQuantity,
+  onSubmit,
+  onStartScan,
+}: WorkSectionProps) => {
+  return (
+    <Box style={styles.card}>
+      <VStack space="sm">
+        <Heading size="md">2) Work</Heading>
+        <Text>Use your saved profile to submit package records.</Text>
+        <HStack space="sm" alignItems="center">
+          <Box flex={1}>
+            <Input>
+              <InputInput
+                value={packageNo}
+                onChangeText={onSetPackageNo}
+                placeholder="Scan or type package number"
+              />
+            </Input>
+          </Box>
+          <Button onPress={() => onStartScan('barcode')} variant="outline" size="sm">
+            <ButtonText>Scan</ButtonText>
+          </Button>
+        </HStack>
+
+        <HStack space="sm" alignItems="center">
+          <Switch value={intact} onValueChange={onSetIntact} />
+          <Text>Package intact</Text>
+        </HStack>
+
+        <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
+          <Pressable
+            onPress={() => onSetQuantity(Math.max(0, quantity - 1))}
+            disabled={intact}
+            style={styles.iconButton}
+          >
+            <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
+          </Pressable>
+          <Box width={120}>
+            <Input isDisabled={intact}>
+              <InputInput
+                value={String(quantity)}
+                editable={false}
+                textAlign="center"
+                placeholder="Quantity"
+              />
+            </Input>
+          </Box>
+          <Pressable
+            onPress={() => onSetQuantity(quantity + 1)}
+            disabled={intact}
+            style={styles.iconButton}
+          >
+            <MaterialIcons name="add-circle-outline" size={26} color="#444" />
+          </Pressable>
+        </HStack>
+
+        <Button onPress={onSubmit}>
+          <ButtonText>Submit</ButtonText>
+        </Button>
+
+        {result ? <SummaryText>{result}</SummaryText> : null}
+      </VStack>
+    </Box>
+  );
+};
+
+type OfflineQueueSectionProps = {
+  outbox: OutboxItem[];
+  onSyncNow: () => void;
+  onClearOutbox: () => void;
+};
+
+const OfflineQueueSection = ({ outbox, onSyncNow, onClearOutbox }: OfflineQueueSectionProps) => {
+  return (
+    <Box style={styles.card}>
+      <VStack space="sm">
+        <Heading size="md">Offline queue</Heading>
+        <Text>Pending submissions: {outbox.length}</Text>
+        <HStack space="sm" flexWrap="wrap">
+          <Button onPress={onSyncNow} variant="outline" size="sm">
+            <ButtonText>Sync now</ButtonText>
+          </Button>
+          <Button onPress={onClearOutbox} variant="outline" size="sm">
+            <ButtonText>Clear</ButtonText>
+          </Button>
+        </HStack>
+      </VStack>
+    </Box>
   );
 };
 
@@ -472,153 +683,42 @@ export default function App() {
             <VStack space="md" px="$4" py="$4">
               <Heading size="lg">Inventory Scanner PoC</Heading>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">1) Recording Profile</Heading>
-                  <Text>
-                    Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
-                  </Text>
-                  <HStack space="sm">
-                    <Badge bg={pillVariant(Boolean(scannedApi))}>
-                      <BadgeText color="$textLight0">
-                        API Endpoint: {scannedApi ? 'ready' : 'missing'}
-                      </BadgeText>
-                    </Badge>
-                    <Badge bg={pillVariant(Boolean(scannedInfo))}>
-                      <BadgeText color="$textLight0">
-                        Recording Info: {scannedInfo ? 'ready' : 'missing'}
-                      </BadgeText>
-                    </Badge>
-                  </HStack>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={() => startScan('qr')} size="sm">
-                      <ButtonText>Scan QR</ButtonText>
-                    </Button>
-                    <Button
-                      onPress={() => {
-                        setScannedApi(null);
-                        setScannedInfo(null);
-                      }}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <ButtonText>Reset</ButtonText>
-                    </Button>
-                  </HStack>
+              <ProfileSection
+                scannedApi={scannedApi}
+                scannedInfo={scannedInfo}
+                pasteJson={pasteJson}
+                bearerToken={bearerToken}
+                profile={profile}
+                hasBothScans={hasBothScans}
+                profileSummary={profileSummary}
+                onSetPasteJson={setPasteJson}
+                onDetectPaste={onDetectPaste}
+                onSaveProfile={onSaveProfile}
+                onClearSavedProfile={onClearSavedProfile}
+                onStartScan={startScan}
+                onReset={() => {
+                  setScannedApi(null);
+                  setScannedInfo(null);
+                }}
+              />
 
-                  <Divider my="$2" />
-                  <Text>Paste JSON instead</Text>
-                  <Textarea>
-                    <TextareaInput
-                      value={pasteJson}
-                      onChangeText={setPasteJson}
-                      placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
-                      autoCapitalize="none"
-                    />
-                  </Textarea>
-                  <Button onPress={onDetectPaste} variant="outline" size="sm">
-                    <ButtonText>Detect</ButtonText>
-                  </Button>
+              <WorkSection
+                packageNo={packageNo}
+                intact={intact}
+                quantity={quantity}
+                result={result}
+                onSetPackageNo={setPackageNo}
+                onSetIntact={setIntact}
+                onSetQuantity={setQuantity}
+                onSubmit={onSubmit}
+                onStartScan={startScan}
+              />
 
-                  <Divider my="$2" />
-                  <Text>Advanced: Optional Bearer Token</Text>
-                  <Input>
-                    <InputField
-                      value={bearerToken}
-                      onChangeText={setBearerToken}
-                      placeholder="Bearer token (optional)"
-                      secureTextEntry
-                      autoCapitalize="none"
-                    />
-                  </Input>
-
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
-                      <ButtonText>Save Profile</ButtonText>
-                    </Button>
-                    <Button onPress={onClearSavedProfile} variant="outline" size="sm">
-                      <ButtonText>Clear Saved Profile</ButtonText>
-                    </Button>
-                  </HStack>
-
-                  <Text>Current Profile</Text>
-                  <SummaryText>{profileSummary}</SummaryText>
-                </VStack>
-              </Box>
-
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">2) Work</Heading>
-                  <Text>Use your saved profile to submit package records.</Text>
-                  <HStack space="sm" alignItems="center">
-                    <Box flex={1}>
-                      <Input>
-                        <InputField
-                          value={packageNo}
-                          onChangeText={setPackageNo}
-                          placeholder="Scan or type package number"
-                        />
-                      </Input>
-                    </Box>
-                    <Button onPress={() => startScan('barcode')} variant="outline" size="sm">
-                      <ButtonText>Scan</ButtonText>
-                    </Button>
-                  </HStack>
-
-                  <HStack space="sm" alignItems="center">
-                    <Switch value={intact} onValueChange={setIntact} />
-                    <Text>Package intact</Text>
-                  </HStack>
-
-                  <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
-                    <Pressable
-                      onPress={() => setQuantity((value) => Math.max(0, value - 1))}
-                      disabled={intact}
-                      style={styles.iconButton}
-                    >
-                      <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
-                    </Pressable>
-                    <Box width={120}>
-                      <Input isDisabled={intact}>
-                        <InputField
-                          value={String(quantity)}
-                          editable={false}
-                          textAlign="center"
-                          placeholder="Quantity"
-                        />
-                      </Input>
-                    </Box>
-                    <Pressable
-                      onPress={() => setQuantity((value) => value + 1)}
-                      disabled={intact}
-                      style={styles.iconButton}
-                    >
-                      <MaterialIcons name="add-circle-outline" size={26} color="#444" />
-                    </Pressable>
-                  </HStack>
-
-                  <Button onPress={onSubmit}>
-                    <ButtonText>Submit</ButtonText>
-                  </Button>
-
-                  {result ? <SummaryText>{result}</SummaryText> : null}
-                </VStack>
-              </Box>
-
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">Offline queue</Heading>
-                  <Text>Pending submissions: {outbox.length}</Text>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSyncNow} variant="outline" size="sm">
-                      <ButtonText>Sync now</ButtonText>
-                    </Button>
-                    <Button onPress={onClearOutbox} variant="outline" size="sm">
-                      <ButtonText>Clear</ButtonText>
-                    </Button>
-                  </HStack>
-                </VStack>
-              </Box>
+              <OfflineQueueSection
+                outbox={outbox}
+                onSyncNow={onSyncNow}
+                onClearOutbox={onClearOutbox}
+              />
             </VStack>
           </ScrollView>
         </Box>
