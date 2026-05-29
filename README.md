@@ -1,6 +1,6 @@
 # Express Luck Inventory (React Native)
 
-Offline-first inventory recording app rebuilt with React Native, Expo, Tamagui v2, and Bun.
+Offline-first inventory recording app rebuilt with React Native, Expo, Gluestack UI, and Bun.
 
 ## Features
 
@@ -16,7 +16,7 @@ Offline-first inventory recording app rebuilt with React Native, Expo, Tamagui v
 ## Tech Stack
 
 - React Native + Expo
-- Tamagui v2
+- Gluestack UI
 - Bun
 - AsyncStorage
 - Expo Camera (barcode scanning)
