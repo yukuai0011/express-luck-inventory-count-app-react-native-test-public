@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -14,25 +14,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-  Badge,
-  BadgeText,
-  Box,
   Button,
-  ButtonText,
-  Divider,
-  GluestackUIProvider,
-  Heading,
-  HStack,
   Input,
-  InputField,
+  Stack,
   Switch,
+  TamaguiProvider,
   Text,
-  Textarea,
-  TextareaInput,
-  useToast,
-  VStack,
-} from '@gluestack-ui/themed';
-import { config } from '@gluestack-ui/config';
+  XStack,
+  YStack,
+} from 'tamagui';
+import config from './tamagui.config';
 
 type RecordingInfo = {
   orderNo: string;
@@ -100,18 +91,71 @@ const parseRecordingInfo = (value: Record<string, unknown>): RecordingInfo | nul
   };
 };
 
-const pillVariant = (ok: boolean) => (ok ? '$success600' : '$backgroundDark500');
+const pillVariant = (ok: boolean) => (ok ? '#16a34a' : '#475569');
+
+const Divider = ({ vertical = 12 }: { vertical?: number }) => (
+  <Stack height={1} backgroundColor="#e2e8f0" marginVertical={vertical} />
+);
+
+const Card = ({ children }: { children: React.ReactNode }) => (
+  <YStack
+    borderWidth={1}
+    borderColor="#e2e8f0"
+    borderRadius={12}
+    padding={16}
+    backgroundColor="#ffffff"
+    gap={12}
+  >
+    {children}
+  </YStack>
+);
+
+const PageTitle = ({ children }: { children: string }) => (
+  <Text fontSize={22} fontWeight="700">
+    {children}
+  </Text>
+);
+
+const SectionTitle = ({ children }: { children: string }) => (
+  <Text fontSize={18} fontWeight="700">
+    {children}
+  </Text>
+);
+
+const OutlineButton = ({
+  children,
+  disabled,
+  onPress,
+}: {
+  children: string;
+  disabled?: boolean;
+  onPress?: () => void;
+}) => (
+  <Button
+    onPress={onPress}
+    disabled={disabled}
+    backgroundColor="transparent"
+    borderWidth={1}
+    borderColor="#cbd5e1"
+    paddingHorizontal={12}
+    paddingVertical={8}
+  >
+    <Text color="#0f172a" fontWeight="600">
+      {children}
+    </Text>
+  </Button>
+);
 
 const SummaryText = ({ children }: { children: string }) => (
-  <Box
+  <Stack
     borderWidth={1}
-    borderColor="$borderLight200"
-    borderRadius="$md"
-    p="$3"
-    bg="$backgroundLight0"
+    borderColor="#e2e8f0"
+    borderRadius={12}
+    padding={12}
+    backgroundColor="#ffffff"
   >
     <Text style={styles.codeText}>{children}</Text>
-  </Box>
+  </Stack>
 );
 
 const ScanModal = ({
@@ -137,14 +181,12 @@ const ScanModal = ({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <Box flex={1} bg="$backgroundLight0">
+      <YStack flex={1} backgroundColor="#ffffff">
         <SafeAreaView style={styles.safeArea}>
-          <HStack alignItems="center" justifyContent="space-between" px="$4" py="$3">
-            <Heading size="md">{title}</Heading>
-            <Button variant="outline" onPress={onClose} size="sm">
-              <ButtonText>Close</ButtonText>
-            </Button>
-          </HStack>
+          <XStack alignItems="center" justifyContent="space-between" paddingHorizontal={16} paddingVertical={12}>
+            <SectionTitle>{title}</SectionTitle>
+            <OutlineButton onPress={onClose}>Close</OutlineButton>
+          </XStack>
           <View style={styles.scannerContainer}>
             <CameraView
               style={StyleSheet.absoluteFillObject}
@@ -165,13 +207,14 @@ const ScanModal = ({
             />
           </View>
         </SafeAreaView>
-      </Box>
+      </YStack>
     </Modal>
   );
 };
 
 export default function App() {
-  const toast = useToast();
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
@@ -203,20 +246,23 @@ export default function App() {
     return JSON.stringify(safe, null, 2);
   }, [profile]);
 
-  const showToast = useCallback(
-    (message: string) => {
-      toast.show({
-        placement: 'top',
-        duration: 2000,
-        render: () => (
-          <Box bg="$backgroundDark900" px="$3" py="$2" borderRadius="$md">
-            <Text color="$textLight0">{message}</Text>
-          </Box>
-        ),
-      });
-    },
-    [toast]
-  );
+  const showToast = useCallback((message: string) => {
+    setToastMessage(message);
+    if (toastTimeout.current) {
+      clearTimeout(toastTimeout.current);
+    }
+    toastTimeout.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeout.current) {
+        clearTimeout(toastTimeout.current);
+      }
+    };
+  }, []);
 
   const loadProfile = useCallback(async () => {
     const raw = await AsyncStorage.getItem(STORAGE_PROFILE);
@@ -460,117 +506,153 @@ export default function App() {
   }, [saveOutbox]);
 
   return (
-    <GluestackUIProvider config={config}>
+    <TamaguiProvider config={config} defaultTheme="light">
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
-        <Box flex={1} bg="$backgroundLight0">
+        <YStack flex={1} backgroundColor="#f8fafc">
+          {toastMessage ? (
+            <YStack
+              position="absolute"
+              top={12}
+              left={12}
+              right={12}
+              zIndex={10}
+              alignItems="center"
+              pointerEvents="none"
+            >
+              <YStack backgroundColor="#0f172a" paddingHorizontal={12} paddingVertical={8} borderRadius={10}>
+                <Text color="#ffffff" fontSize={13}>
+                  {toastMessage}
+                </Text>
+              </YStack>
+            </YStack>
+          ) : null}
+
           <ScrollView
             style={styles.scrollWrapper}
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            <VStack space="md" px="$4" py="$4">
-              <Heading size="lg">Inventory Scanner PoC</Heading>
+            <YStack gap={16} paddingHorizontal={16} paddingVertical={16}>
+              <PageTitle>Inventory Scanner PoC</PageTitle>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">1) Recording Profile</Heading>
+              <Card>
+                <YStack gap={12}>
+                  <SectionTitle>1) Recording Profile</SectionTitle>
                   <Text>
                     Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
                   </Text>
-                  <HStack space="sm">
-                    <Badge bg={pillVariant(Boolean(scannedApi))}>
-                      <BadgeText color="$textLight0">
+                  <XStack gap={8} flexWrap="wrap">
+                    <XStack
+                      alignItems="center"
+                      paddingHorizontal={10}
+                      paddingVertical={4}
+                      borderRadius={999}
+                      backgroundColor={pillVariant(Boolean(scannedApi))}
+                    >
+                      <Text color="#ffffff" fontSize={12} fontWeight="600">
                         API Endpoint: {scannedApi ? 'ready' : 'missing'}
-                      </BadgeText>
-                    </Badge>
-                    <Badge bg={pillVariant(Boolean(scannedInfo))}>
-                      <BadgeText color="$textLight0">
+                      </Text>
+                    </XStack>
+                    <XStack
+                      alignItems="center"
+                      paddingHorizontal={10}
+                      paddingVertical={4}
+                      borderRadius={999}
+                      backgroundColor={pillVariant(Boolean(scannedInfo))}
+                    >
+                      <Text color="#ffffff" fontSize={12} fontWeight="600">
                         Recording Info: {scannedInfo ? 'ready' : 'missing'}
-                      </BadgeText>
-                    </Badge>
-                  </HStack>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={() => startScan('qr')} size="sm">
-                      <ButtonText>Scan QR</ButtonText>
-                    </Button>
+                      </Text>
+                    </XStack>
+                  </XStack>
+                  <XStack gap={8} flexWrap="wrap">
                     <Button
+                      onPress={() => startScan('qr')}
+                      backgroundColor="#2563eb"
+                      paddingHorizontal={12}
+                      paddingVertical={8}
+                    >
+                      <Text color="#ffffff" fontWeight="600">
+                        Scan QR
+                      </Text>
+                    </Button>
+                    <OutlineButton
                       onPress={() => {
                         setScannedApi(null);
                         setScannedInfo(null);
                       }}
-                      variant="outline"
-                      size="sm"
                     >
-                      <ButtonText>Reset</ButtonText>
-                    </Button>
-                  </HStack>
+                      Reset
+                    </OutlineButton>
+                  </XStack>
 
-                  <Divider my="$2" />
+                  <Divider />
                   <Text>Paste JSON instead</Text>
-                  <Textarea>
-                    <TextareaInput
-                      value={pasteJson}
-                      onChangeText={setPasteJson}
-                      placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
-                      autoCapitalize="none"
-                    />
-                  </Textarea>
-                  <Button onPress={onDetectPaste} variant="outline" size="sm">
-                    <ButtonText>Detect</ButtonText>
-                  </Button>
+                  <Input
+                    value={pasteJson}
+                    onChangeText={setPasteJson}
+                    placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
+                    autoCapitalize="none"
+                    multiline
+                    minHeight={96}
+                    textAlignVertical="top"
+                  />
+                  <OutlineButton onPress={onDetectPaste}>Detect</OutlineButton>
 
-                  <Divider my="$2" />
+                  <Divider />
                   <Text>Advanced: Optional Bearer Token</Text>
-                  <Input>
-                    <InputField
-                      value={bearerToken}
-                      onChangeText={setBearerToken}
-                      placeholder="Bearer token (optional)"
-                      secureTextEntry
-                      autoCapitalize="none"
-                    />
-                  </Input>
+                  <Input
+                    value={bearerToken}
+                    onChangeText={setBearerToken}
+                    placeholder="Bearer token (optional)"
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
 
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
-                      <ButtonText>Save Profile</ButtonText>
+                  <XStack gap={8} flexWrap="wrap">
+                    <Button
+                      onPress={onSaveProfile}
+                      disabled={!hasBothScans}
+                      backgroundColor={hasBothScans ? '#2563eb' : '#94a3b8'}
+                      paddingHorizontal={12}
+                      paddingVertical={8}
+                    >
+                      <Text color="#ffffff" fontWeight="600">
+                        Save Profile
+                      </Text>
                     </Button>
-                    <Button onPress={onClearSavedProfile} variant="outline" size="sm">
-                      <ButtonText>Clear Saved Profile</ButtonText>
-                    </Button>
-                  </HStack>
+                    <OutlineButton onPress={onClearSavedProfile}>Clear Saved Profile</OutlineButton>
+                  </XStack>
 
                   <Text>Current Profile</Text>
                   <SummaryText>{profileSummary}</SummaryText>
-                </VStack>
-              </Box>
+                </YStack>
+              </Card>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">2) Work</Heading>
+              <Card>
+                <YStack gap={12}>
+                  <SectionTitle>2) Work</SectionTitle>
                   <Text>Use your saved profile to submit package records.</Text>
-                  <HStack space="sm" alignItems="center">
-                    <Box flex={1}>
-                      <Input>
-                        <InputField
-                          value={packageNo}
-                          onChangeText={setPackageNo}
-                          placeholder="Scan or type package number"
-                        />
-                      </Input>
-                    </Box>
-                    <Button onPress={() => startScan('barcode')} variant="outline" size="sm">
-                      <ButtonText>Scan</ButtonText>
-                    </Button>
-                  </HStack>
+                  <XStack gap={8} alignItems="center">
+                    <Stack flex={1}>
+                      <Input
+                        value={packageNo}
+                        onChangeText={setPackageNo}
+                        placeholder="Scan or type package number"
+                      />
+                    </Stack>
+                    <OutlineButton onPress={() => startScan('barcode')}>Scan</OutlineButton>
+                  </XStack>
 
-                  <HStack space="sm" alignItems="center">
-                    <Switch value={intact} onValueChange={setIntact} />
+                  <XStack gap={8} alignItems="center">
+                    <Switch checked={intact} onCheckedChange={setIntact}>
+                      <Switch.Thumb backgroundColor="#ffffff" />
+                    </Switch>
                     <Text>Package intact</Text>
-                  </HStack>
+                  </XStack>
 
-                  <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
+                  <XStack gap={8} alignItems="center" opacity={intact ? 0.5 : 1}>
                     <Pressable
                       onPress={() => setQuantity((value) => Math.max(0, value - 1))}
                       disabled={intact}
@@ -578,16 +660,15 @@ export default function App() {
                     >
                       <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
                     </Pressable>
-                    <Box width={120}>
-                      <Input isDisabled={intact}>
-                        <InputField
-                          value={String(quantity)}
-                          editable={false}
-                          textAlign="center"
-                          placeholder="Quantity"
-                        />
-                      </Input>
-                    </Box>
+                    <Stack width={120}>
+                      <Input
+                        value={String(quantity)}
+                        editable={false}
+                        textAlign="center"
+                        placeholder="Quantity"
+                        disabled={intact}
+                      />
+                    </Stack>
                     <Pressable
                       onPress={() => setQuantity((value) => value + 1)}
                       disabled={intact}
@@ -595,33 +676,31 @@ export default function App() {
                     >
                       <MaterialIcons name="add-circle-outline" size={26} color="#444" />
                     </Pressable>
-                  </HStack>
+                  </XStack>
 
-                  <Button onPress={onSubmit}>
-                    <ButtonText>Submit</ButtonText>
+                  <Button onPress={onSubmit} backgroundColor="#2563eb" paddingHorizontal={12} paddingVertical={10}>
+                    <Text color="#ffffff" fontWeight="600">
+                      Submit
+                    </Text>
                   </Button>
 
                   {result ? <SummaryText>{result}</SummaryText> : null}
-                </VStack>
-              </Box>
+                </YStack>
+              </Card>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">Offline queue</Heading>
+              <Card>
+                <YStack gap={12}>
+                  <SectionTitle>Offline queue</SectionTitle>
                   <Text>Pending submissions: {outbox.length}</Text>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSyncNow} variant="outline" size="sm">
-                      <ButtonText>Sync now</ButtonText>
-                    </Button>
-                    <Button onPress={onClearOutbox} variant="outline" size="sm">
-                      <ButtonText>Clear</ButtonText>
-                    </Button>
-                  </HStack>
-                </VStack>
-              </Box>
-            </VStack>
+                  <XStack gap={8} flexWrap="wrap">
+                    <OutlineButton onPress={onSyncNow}>Sync now</OutlineButton>
+                    <OutlineButton onPress={onClearOutbox}>Clear</OutlineButton>
+                  </XStack>
+                </YStack>
+              </Card>
+            </YStack>
           </ScrollView>
-        </Box>
+        </YStack>
 
         {scanMode ? (
           <ScanModal
@@ -633,7 +712,7 @@ export default function App() {
           />
         ) : null}
       </SafeAreaView>
-    </GluestackUIProvider>
+    </TamaguiProvider>
   );
 }
 
