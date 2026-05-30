@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import '../global.css';
 import {
   Alert,
   Modal,
-  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -14,25 +14,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
-  Badge,
-  BadgeText,
-  Box,
+  HeroUINativeProvider,
   Button,
-  ButtonText,
-  Divider,
-  GluestackUIProvider,
-  Heading,
-  HStack,
+  Card,
+  Chip,
   Input,
-  InputField,
+  Separator,
   Switch,
   Text,
-  Textarea,
-  TextareaInput,
+  TextArea,
   useToast,
-  VStack,
-} from '@gluestack-ui/themed';
-import { config } from '@gluestack-ui/config';
+} from 'heroui-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 type RecordingInfo = {
   orderNo: string;
@@ -100,18 +93,10 @@ const parseRecordingInfo = (value: Record<string, unknown>): RecordingInfo | nul
   };
 };
 
-const pillVariant = (ok: boolean) => (ok ? '$success600' : '$backgroundDark500');
-
 const SummaryText = ({ children }: { children: string }) => (
-  <Box
-    borderWidth={1}
-    borderColor="$borderLight200"
-    borderRadius="$md"
-    p="$3"
-    bg="$backgroundLight0"
-  >
+  <View className="border border-default-200 rounded-lg p-3 bg-background">
     <Text style={styles.codeText}>{children}</Text>
-  </Box>
+  </View>
 );
 
 const ScanModal = ({
@@ -137,17 +122,17 @@ const ScanModal = ({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <Box flex={1} bg="$backgroundLight0">
+      <View className="flex-1 bg-background">
         <SafeAreaView style={styles.safeArea}>
-          <HStack alignItems="center" justifyContent="space-between" px="$4" py="$3">
-            <Heading size="md">{title}</Heading>
-            <Button variant="outline" onPress={onClose} size="sm">
-              <ButtonText>Close</ButtonText>
+          <View className="flex-row items-center justify-between px-4 py-3">
+            <Text className="text-lg font-semibold">{title}</Text>
+            <Button variant="outline" size="sm" onPress={onClose}>
+              <Button.Label>Close</Button.Label>
             </Button>
-          </HStack>
+          </View>
           <View style={styles.scannerContainer}>
             <CameraView
-              style={StyleSheet.absoluteFillObject}
+              style={StyleSheet.absoluteFill}
               barcodeScannerSettings={
                 mode === 'qr' ? { barcodeTypes: ['qr'] } : undefined
               }
@@ -165,13 +150,13 @@ const ScanModal = ({
             />
           </View>
         </SafeAreaView>
-      </Box>
+      </View>
     </Modal>
   );
 };
 
 export default function App() {
-  const toast = useToast();
+  const { toast } = useToast();
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
@@ -206,13 +191,10 @@ export default function App() {
   const showToast = useCallback(
     (message: string) => {
       toast.show({
+        label: message,
+        variant: 'default',
         placement: 'top',
         duration: 2000,
-        render: () => (
-          <Box bg="$backgroundDark900" px="$3" py="$2" borderRadius="$md">
-            <Text color="$textLight0">{message}</Text>
-          </Box>
-        ),
       });
     },
     [toast]
@@ -460,117 +442,113 @@ export default function App() {
   }, [saveOutbox]);
 
   return (
-    <GluestackUIProvider config={config}>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar style="dark" />
-        <Box flex={1} bg="$backgroundLight0">
-          <ScrollView
-            style={styles.scrollWrapper}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <VStack space="md" px="$4" py="$4">
-              <Heading size="lg">Inventory Scanner PoC</Heading>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <HeroUINativeProvider>
+        <SafeAreaView style={styles.safeArea}>
+          <StatusBar style="dark" />
+          <View className="flex-1 bg-background">
+            <ScrollView
+              style={styles.scrollWrapper}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View className="gap-4 px-4 py-4">
+                <Text className="text-2xl font-bold">Inventory Scanner PoC</Text>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">1) Recording Profile</Heading>
-                  <Text>
+              <Card className="p-4">
+                <View className="gap-3">
+                  <Text className="text-lg font-semibold">1) Recording Profile</Text>
+                  <Text className="text-default-500">
                     Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
                   </Text>
-                  <HStack space="sm">
-                    <Badge bg={pillVariant(Boolean(scannedApi))}>
-                      <BadgeText color="$textLight0">
+                  <View className="flex-row gap-2">
+                    <Chip variant="soft" color={scannedApi ? 'success' : 'default'} size="sm">
+                      <Chip.Label>
                         API Endpoint: {scannedApi ? 'ready' : 'missing'}
-                      </BadgeText>
-                    </Badge>
-                    <Badge bg={pillVariant(Boolean(scannedInfo))}>
-                      <BadgeText color="$textLight0">
+                      </Chip.Label>
+                    </Chip>
+                    <Chip variant="soft" color={scannedInfo ? 'success' : 'default'} size="sm">
+                      <Chip.Label>
                         Recording Info: {scannedInfo ? 'ready' : 'missing'}
-                      </BadgeText>
-                    </Badge>
-                  </HStack>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={() => startScan('qr')} size="sm">
-                      <ButtonText>Scan QR</ButtonText>
+                      </Chip.Label>
+                    </Chip>
+                  </View>
+                  <View className="flex-row flex-wrap gap-2">
+                    <Button size="sm" onPress={() => startScan('qr')}>
+                      <Button.Label>Scan QR</Button.Label>
                     </Button>
                     <Button
+                      size="sm"
+                      variant="outline"
                       onPress={() => {
                         setScannedApi(null);
                         setScannedInfo(null);
                       }}
-                      variant="outline"
-                      size="sm"
                     >
-                      <ButtonText>Reset</ButtonText>
+                      <Button.Label>Reset</Button.Label>
                     </Button>
-                  </HStack>
+                  </View>
 
-                  <Divider my="$2" />
-                  <Text>Paste JSON instead</Text>
-                  <Textarea>
-                    <TextareaInput
-                      value={pasteJson}
-                      onChangeText={setPasteJson}
-                      placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
-                      autoCapitalize="none"
-                    />
-                  </Textarea>
-                  <Button onPress={onDetectPaste} variant="outline" size="sm">
-                    <ButtonText>Detect</ButtonText>
+                  <Separator className="my-2" />
+                  <Text className="text-default-500">Paste JSON instead</Text>
+                  <TextArea
+                    value={pasteJson}
+                    onChangeText={setPasteJson}
+                    placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
+                    autoCapitalize="none"
+                    numberOfLines={3}
+                  />
+                  <Button size="sm" variant="outline" onPress={onDetectPaste}>
+                    <Button.Label>Detect</Button.Label>
                   </Button>
 
-                  <Divider my="$2" />
-                  <Text>Advanced: Optional Bearer Token</Text>
-                  <Input>
-                    <InputField
-                      value={bearerToken}
-                      onChangeText={setBearerToken}
-                      placeholder="Bearer token (optional)"
-                      secureTextEntry
-                      autoCapitalize="none"
-                    />
-                  </Input>
+                  <Separator className="my-2" />
+                  <Text className="text-default-500">Advanced: Optional Bearer Token</Text>
+                  <Input
+                    value={bearerToken}
+                    onChangeText={setBearerToken}
+                    placeholder="Bearer token (optional)"
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
 
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
-                      <ButtonText>Save Profile</ButtonText>
+                  <View className="flex-row flex-wrap gap-2">
+                    <Button size="sm" onPress={onSaveProfile} isDisabled={!hasBothScans}>
+                      <Button.Label>Save Profile</Button.Label>
                     </Button>
-                    <Button onPress={onClearSavedProfile} variant="outline" size="sm">
-                      <ButtonText>Clear Saved Profile</ButtonText>
+                    <Button size="sm" variant="outline" onPress={onClearSavedProfile}>
+                      <Button.Label>Clear Saved Profile</Button.Label>
                     </Button>
-                  </HStack>
+                  </View>
 
-                  <Text>Current Profile</Text>
+                  <Text className="text-default-500">Current Profile</Text>
                   <SummaryText>{profileSummary}</SummaryText>
-                </VStack>
-              </Box>
+                </View>
+              </Card>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">2) Work</Heading>
-                  <Text>Use your saved profile to submit package records.</Text>
-                  <HStack space="sm" alignItems="center">
-                    <Box flex={1}>
-                      <Input>
-                        <InputField
-                          value={packageNo}
-                          onChangeText={setPackageNo}
-                          placeholder="Scan or type package number"
-                        />
-                      </Input>
-                    </Box>
-                    <Button onPress={() => startScan('barcode')} variant="outline" size="sm">
-                      <ButtonText>Scan</ButtonText>
+              <Card className="p-4">
+                <View className="gap-3">
+                  <Text className="text-lg font-semibold">2) Work</Text>
+                  <Text className="text-default-500">Use your saved profile to submit package records.</Text>
+                  <View className="flex-row items-center gap-2">
+                    <View className="flex-1">
+                      <Input
+                        value={packageNo}
+                        onChangeText={setPackageNo}
+                        placeholder="Scan or type package number"
+                      />
+                    </View>
+                    <Button size="sm" variant="outline" onPress={() => startScan('barcode')}>
+                      <Button.Label>Scan</Button.Label>
                     </Button>
-                  </HStack>
+                  </View>
 
-                  <HStack space="sm" alignItems="center">
-                    <Switch value={intact} onValueChange={setIntact} />
+                  <View className="flex-row items-center gap-2">
+                    <Switch isSelected={intact} onSelectedChange={setIntact} />
                     <Text>Package intact</Text>
-                  </HStack>
+                  </View>
 
-                  <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
+                  <View className="flex-row items-center gap-2" style={{ opacity: intact ? 0.5 : 1 }}>
                     <Pressable
                       onPress={() => setQuantity((value) => Math.max(0, value - 1))}
                       disabled={intact}
@@ -578,16 +556,15 @@ export default function App() {
                     >
                       <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
                     </Pressable>
-                    <Box width={120}>
-                      <Input isDisabled={intact}>
-                        <InputField
-                          value={String(quantity)}
-                          editable={false}
-                          textAlign="center"
-                          placeholder="Quantity"
-                        />
-                      </Input>
-                    </Box>
+                    <View style={{ width: 120 }}>
+                      <Input
+                        isDisabled={intact}
+                        value={String(quantity)}
+                        editable={false}
+                        textAlign="center"
+                        placeholder="Quantity"
+                      />
+                    </View>
                     <Pressable
                       onPress={() => setQuantity((value) => value + 1)}
                       disabled={intact}
@@ -595,33 +572,33 @@ export default function App() {
                     >
                       <MaterialIcons name="add-circle-outline" size={26} color="#444" />
                     </Pressable>
-                  </HStack>
+                  </View>
 
                   <Button onPress={onSubmit}>
-                    <ButtonText>Submit</ButtonText>
+                    <Button.Label>Submit</Button.Label>
                   </Button>
 
                   {result ? <SummaryText>{result}</SummaryText> : null}
-                </VStack>
-              </Box>
+                </View>
+              </Card>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">Offline queue</Heading>
-                  <Text>Pending submissions: {outbox.length}</Text>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSyncNow} variant="outline" size="sm">
-                      <ButtonText>Sync now</ButtonText>
+              <Card className="p-4">
+                <View className="gap-3">
+                  <Text className="text-lg font-semibold">Offline queue</Text>
+                  <Text className="text-default-500">Pending submissions: {outbox.length}</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    <Button size="sm" variant="outline" onPress={onSyncNow}>
+                      <Button.Label>Sync now</Button.Label>
                     </Button>
-                    <Button onPress={onClearOutbox} variant="outline" size="sm">
-                      <ButtonText>Clear</ButtonText>
+                    <Button size="sm" variant="outline" onPress={onClearOutbox}>
+                      <Button.Label>Clear</Button.Label>
                     </Button>
-                  </HStack>
-                </VStack>
-              </Box>
-            </VStack>
+                  </View>
+                </View>
+              </Card>
+            </View>
           </ScrollView>
-        </Box>
+        </View>
 
         {scanMode ? (
           <ScanModal
@@ -633,7 +610,8 @@ export default function App() {
           />
         ) : null}
       </SafeAreaView>
-    </GluestackUIProvider>
+      </HeroUINativeProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -647,13 +625,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  card: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: '#ffffff',
-  },
   scannerContainer: {
     flex: 1,
     overflow: 'hidden',
@@ -664,7 +635,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   codeText: {
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    fontFamily: 'monospace',
     fontSize: 12,
   },
 });

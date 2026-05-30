@@ -2,21 +2,16 @@
   "expo": {
     "name": "Express Luck Inventory",
     "slug": "express-luck-inventory",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "express-luck-inventory",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "Allow camera access to scan QR codes and package barcodes."
-      }
     },
     "android": {
       "permissions": ["CAMERA"],
@@ -25,14 +20,20 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "package": "com.expressluck.inventory"
     },
-    "plugins": ["@react-native-async-storage/expo-with-async-storage"],
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "experiments": {
-      "baseUrl": "/express-luck-inventory-count-app-react-native-test-public"
-    }
+    "plugins": [
+      "expo-camera",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ]
   }
 }
