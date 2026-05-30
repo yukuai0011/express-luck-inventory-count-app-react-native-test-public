@@ -62,8 +62,8 @@ jobs:
 
       - name: Optimise Gradle properties
         run: |
-          # Bump JVM heap for CMake/native builds
-          sed -i 's/-Xmx2048m/-Xmx4096m/' android/gradle.properties
+          # Bump JVM heap and metaspace for CMake/native builds
+          sed -i 's/-Xmx2048m -XX:MaxMetaspaceSize=512m/-Xmx4096m -XX:MaxMetaspaceSize=1024m/' android/gradle.properties
           # Drop x86/x86_64 — only build ARM for real devices
           sed -i 's/reactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64/reactNativeArchitectures=arm64-v8a,armeabi-v7a/' android/gradle.properties
 
