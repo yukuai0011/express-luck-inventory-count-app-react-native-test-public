@@ -7,15 +7,32 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  View as RNView,
+  View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
-import { TamaguiProvider, View, YStack, XStack, Text, Button, Input, TextArea, Switch, Separator } from 'tamagui';
-import { toast, Toaster } from '@tamagui/toast/v2';
-import tamagui from './tamagui.config';
+import {
+  Badge,
+  BadgeText,
+  Box,
+  Button,
+  ButtonText,
+  Divider,
+  GluestackUIProvider,
+  Heading,
+  HStack,
+  Input,
+  InputField,
+  Switch,
+  Text,
+  Textarea,
+  TextareaInput,
+  useToast,
+  VStack,
+} from '@gluestack-ui/themed';
+import { config } from '@gluestack-ui/config';
 
 type RecordingInfo = {
   orderNo: string;
@@ -83,22 +100,18 @@ const parseRecordingInfo = (value: Record<string, unknown>): RecordingInfo | nul
   };
 };
 
-const BadgeContainer = ({ bg, children }: { bg: string; children: React.ReactNode }) => (
-  <View bg={bg as any} px="$2" py="$1" rounded="$2">
-    {children}
-  </View>
-);
+const pillVariant = (ok: boolean) => (ok ? '$success600' : '$backgroundDark500');
 
 const SummaryText = ({ children }: { children: string }) => (
-  <View
+  <Box
     borderWidth={1}
-    borderColor="$borderColor"
-    rounded="$4"
+    borderColor="$borderLight200"
+    borderRadius="$md"
     p="$3"
-    background="$background"
+    bg="$backgroundLight0"
   >
     <Text style={styles.codeText}>{children}</Text>
-  </View>
+  </Box>
 );
 
 const ScanModal = ({
@@ -124,15 +137,15 @@ const ScanModal = ({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View flex={1} background="$background">
+      <Box flex={1} bg="$backgroundLight0">
         <SafeAreaView style={styles.safeArea}>
-          <XStack items="center" justify="space-between" px="$4" py="$3">
-            <Text fontWeight="bold" fontSize="$8">{title}</Text>
-            <Button variant="outlined" onPress={onClose} size="$3">
-              Close
+          <HStack alignItems="center" justifyContent="space-between" px="$4" py="$3">
+            <Heading size="md">{title}</Heading>
+            <Button variant="outline" onPress={onClose} size="sm">
+              <ButtonText>Close</ButtonText>
             </Button>
-          </XStack>
-          <RNView style={styles.scannerContainer}>
+          </HStack>
+          <View style={styles.scannerContainer}>
             <CameraView
               style={StyleSheet.absoluteFillObject}
               barcodeScannerSettings={
@@ -150,14 +163,15 @@ const ScanModal = ({
                 }
               }}
             />
-          </RNView>
+          </View>
         </SafeAreaView>
-      </View>
+      </Box>
     </Modal>
   );
 };
 
 export default function App() {
+  const toast = useToast();
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
@@ -191,9 +205,17 @@ export default function App() {
 
   const showToast = useCallback(
     (message: string) => {
-      toast(message, { duration: 2000 });
+      toast.show({
+        placement: 'top',
+        duration: 2000,
+        render: () => (
+          <Box bg="$backgroundDark900" px="$3" py="$2" borderRadius="$md">
+            <Text color="$textLight0">{message}</Text>
+          </Box>
+        ),
+      });
     },
-    []
+    [toast]
   );
 
   const loadProfile = useCallback(async () => {
@@ -438,117 +460,117 @@ export default function App() {
   }, [saveOutbox]);
 
   return (
-    <TamaguiProvider config={tamagui} defaultTheme="light">
+    <GluestackUIProvider config={config}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
-        <Toaster />
-        <View flex={1} background="$background">
+        <Box flex={1} bg="$backgroundLight0">
           <ScrollView
             style={styles.scrollWrapper}
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            <YStack gap="$4" px="$4" py="$4">
-              <Text fontWeight="bold" fontSize="$9">Inventory Scanner PoC</Text>
+            <VStack space="md" px="$4" py="$4">
+              <Heading size="lg">Inventory Scanner PoC</Heading>
 
-              <View style={styles.card}>
-                <YStack gap="$3">
-                  <Text fontWeight="bold" fontSize="$7">1) Recording Profile</Text>
+              <Box style={styles.card}>
+                <VStack space="sm">
+                  <Heading size="md">1) Recording Profile</Heading>
                   <Text>
                     Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
                   </Text>
-                  <XStack gap="$3">
-                    <BadgeContainer bg={scannedApi ? '$green9' : '$color5'}>
-                      <Text color="$white1">
+                  <HStack space="sm">
+                    <Badge bg={pillVariant(Boolean(scannedApi))}>
+                      <BadgeText color="$textLight0">
                         API Endpoint: {scannedApi ? 'ready' : 'missing'}
-                      </Text>
-                    </BadgeContainer>
-                    <BadgeContainer bg={scannedInfo ? '$green9' : '$color5'}>
-                      <Text color="$white1">
+                      </BadgeText>
+                    </Badge>
+                    <Badge bg={pillVariant(Boolean(scannedInfo))}>
+                      <BadgeText color="$textLight0">
                         Recording Info: {scannedInfo ? 'ready' : 'missing'}
-                      </Text>
-                    </BadgeContainer>
-                  </XStack>
-                  <XStack gap="$3" flexWrap="wrap">
-                    <Button onPress={() => startScan('qr')} size="$3">
-                      Scan QR
+                      </BadgeText>
+                    </Badge>
+                  </HStack>
+                  <HStack space="sm" flexWrap="wrap">
+                    <Button onPress={() => startScan('qr')} size="sm">
+                      <ButtonText>Scan QR</ButtonText>
                     </Button>
                     <Button
                       onPress={() => {
                         setScannedApi(null);
                         setScannedInfo(null);
                       }}
-                      variant="outlined"
-                      size="$3"
+                      variant="outline"
+                      size="sm"
                     >
-                      Reset
+                      <ButtonText>Reset</ButtonText>
                     </Button>
-                  </XStack>
+                  </HStack>
 
-                  <Separator my="$2" />
+                  <Divider my="$2" />
                   <Text>Paste JSON instead</Text>
-                  <TextArea
-                    value={pasteJson}
-                    onChangeText={setPasteJson}
-                    placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
-                    autoCapitalize="none"
-                  />
-                  <Button onPress={onDetectPaste} variant="outlined" size="$3">
-                    Detect
+                  <Textarea>
+                    <TextareaInput
+                      value={pasteJson}
+                      onChangeText={setPasteJson}
+                      placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
+                      autoCapitalize="none"
+                    />
+                  </Textarea>
+                  <Button onPress={onDetectPaste} variant="outline" size="sm">
+                    <ButtonText>Detect</ButtonText>
                   </Button>
 
-                  <Separator my="$2" />
+                  <Divider my="$2" />
                   <Text>Advanced: Optional Bearer Token</Text>
-                  <Input
-                    value={bearerToken}
-                    onChangeText={setBearerToken}
-                    placeholder="Bearer token (optional)"
-                    secureTextEntry
-                    autoCapitalize="none"
-                  />
+                  <Input>
+                    <InputField
+                      value={bearerToken}
+                      onChangeText={setBearerToken}
+                      placeholder="Bearer token (optional)"
+                      secureTextEntry
+                      autoCapitalize="none"
+                    />
+                  </Input>
 
-                  <XStack gap="$3" flexWrap="wrap">
-                    <Button onPress={onSaveProfile} disabled={!hasBothScans} size="$3">
-                      Save Profile
+                  <HStack space="sm" flexWrap="wrap">
+                    <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
+                      <ButtonText>Save Profile</ButtonText>
                     </Button>
-                    <Button onPress={onClearSavedProfile} variant="outlined" size="$3">
-                      Clear Saved Profile
+                    <Button onPress={onClearSavedProfile} variant="outline" size="sm">
+                      <ButtonText>Clear Saved Profile</ButtonText>
                     </Button>
-                  </XStack>
+                  </HStack>
 
                   <Text>Current Profile</Text>
                   <SummaryText>{profileSummary}</SummaryText>
-                </YStack>
-              </View>
+                </VStack>
+              </Box>
 
-              <View style={styles.card}>
-                <YStack gap="$3">
-                  <Text fontWeight="bold" fontSize="$7">2) Work</Text>
+              <Box style={styles.card}>
+                <VStack space="sm">
+                  <Heading size="md">2) Work</Heading>
                   <Text>Use your saved profile to submit package records.</Text>
-                  <XStack gap="$3" items="center">
-                    <View flex={1}>
-                      <Input
-                        value={packageNo}
-                        onChangeText={setPackageNo}
-                        placeholder="Scan or type package number"
-                      />
-                    </View>
-                    <Button onPress={() => startScan('barcode')} variant="outlined" size="$3">
-                      Scan
+                  <HStack space="sm" alignItems="center">
+                    <Box flex={1}>
+                      <Input>
+                        <InputField
+                          value={packageNo}
+                          onChangeText={setPackageNo}
+                          placeholder="Scan or type package number"
+                        />
+                      </Input>
+                    </Box>
+                    <Button onPress={() => startScan('barcode')} variant="outline" size="sm">
+                      <ButtonText>Scan</ButtonText>
                     </Button>
-                  </XStack>
+                  </HStack>
 
-                  <XStack gap="$3" items="center">
-                    <Switch
-                      checked={intact}
-                      onCheckedChange={setIntact}
-                    >
-                      <Switch.Thumb />
-                    </Switch>
+                  <HStack space="sm" alignItems="center">
+                    <Switch value={intact} onValueChange={setIntact} />
                     <Text>Package intact</Text>
-                  </XStack>
+                  </HStack>
 
-                  <XStack gap="$3" items="center" opacity={intact ? 0.5 : 1}>
+                  <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
                     <Pressable
                       onPress={() => setQuantity((value) => Math.max(0, value - 1))}
                       disabled={intact}
@@ -556,14 +578,16 @@ export default function App() {
                     >
                       <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
                     </Pressable>
-                    <View width={120}>
-                      <Input
-                        value={String(quantity)}
-                        disabled
-                        textAlign="center"
-                        placeholder="Quantity"
-                      />
-                    </View>
+                    <Box width={120}>
+                      <Input isDisabled={intact}>
+                        <InputField
+                          value={String(quantity)}
+                          editable={false}
+                          textAlign="center"
+                          placeholder="Quantity"
+                        />
+                      </Input>
+                    </Box>
                     <Pressable
                       onPress={() => setQuantity((value) => value + 1)}
                       disabled={intact}
@@ -571,33 +595,33 @@ export default function App() {
                     >
                       <MaterialIcons name="add-circle-outline" size={26} color="#444" />
                     </Pressable>
-                  </XStack>
+                  </HStack>
 
                   <Button onPress={onSubmit}>
-                    Submit
+                    <ButtonText>Submit</ButtonText>
                   </Button>
 
                   {result ? <SummaryText>{result}</SummaryText> : null}
-                </YStack>
-              </View>
+                </VStack>
+              </Box>
 
-              <View style={styles.card}>
-                <YStack gap="$3">
-                  <Text fontWeight="bold" fontSize="$7">Offline queue</Text>
+              <Box style={styles.card}>
+                <VStack space="sm">
+                  <Heading size="md">Offline queue</Heading>
                   <Text>Pending submissions: {outbox.length}</Text>
-                  <XStack gap="$3" flexWrap="wrap">
-                    <Button onPress={onSyncNow} variant="outlined" size="$3">
-                      Sync now
+                  <HStack space="sm" flexWrap="wrap">
+                    <Button onPress={onSyncNow} variant="outline" size="sm">
+                      <ButtonText>Sync now</ButtonText>
                     </Button>
-                    <Button onPress={onClearOutbox} variant="outlined" size="$3">
-                      Clear
+                    <Button onPress={onClearOutbox} variant="outline" size="sm">
+                      <ButtonText>Clear</ButtonText>
                     </Button>
-                  </XStack>
-                </YStack>
-              </View>
-            </YStack>
+                  </HStack>
+                </VStack>
+              </Box>
+            </VStack>
           </ScrollView>
-        </View>
+        </Box>
 
         {scanMode ? (
           <ScanModal
@@ -609,7 +633,7 @@ export default function App() {
           />
         ) : null}
       </SafeAreaView>
-    </TamaguiProvider>
+    </GluestackUIProvider>
   );
 }
 
