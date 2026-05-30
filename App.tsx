@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import '../global.css';
+import './global.css';
 import {
   Alert,
   Modal,
