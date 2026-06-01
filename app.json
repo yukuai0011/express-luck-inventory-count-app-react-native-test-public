@@ -3,6 +3,7 @@
     "name": "Express Luck Inventory",
     "slug": "express-luck-inventory",
     "version": "1.0.0",
+    "main": "expo-router/entry",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,6 +22,7 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
+      "expo-router",
       "@react-native-async-storage/expo-with-async-storage",
       [
         "expo-splash-screen",
@@ -30,12 +32,6 @@
           "backgroundColor": "#ffffff"
         }
       ]
-    ],
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "experiments": {
-      "baseUrl": "/express-luck-inventory-count-app-react-native-test-public"
-    }
+    ]
   }
 }
