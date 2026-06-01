@@ -147,7 +147,7 @@ const ScanModal = ({
           </HStack>
           <View style={styles.scannerContainer}>
             <CameraView
-              style={StyleSheet.absoluteFillObject}
+              style={StyleSheet.absoluteFill}
               barcodeScannerSettings={
                 mode === 'qr' ? { barcodeTypes: ['qr'] } : undefined
               }
