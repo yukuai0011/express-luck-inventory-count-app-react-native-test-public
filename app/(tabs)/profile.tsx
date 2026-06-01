@@ -82,6 +82,19 @@ const ProfileTab = () => {
     [ensure]
   );
 
+  const onStartQr = useCallback(() => {
+    void startScan('qr');
+  }, [startScan]);
+
+  const onResetScans = useCallback(() => {
+    setScannedApi(null);
+    setScannedInfo(null);
+  }, []);
+
+  const onCloseScan = useCallback(() => {
+    setScanMode(null);
+  }, []);
+
   const onDetectPaste = useCallback(() => {
     const ok = handleQrText(pasteJson.trim());
     if (!ok) toast.show({ variant: 'warning', label: 'Not valid JSON' });
@@ -118,24 +131,21 @@ const ProfileTab = () => {
           Scan two QR codes in any order: API Endpoint and Recording Info. Then save.
         </Text>
         <View className="flex-row gap-2">
-          <Chip variant={scannedApi ? 'success' : 'secondary'}>
+          <Chip color={scannedApi ? 'success' : 'default'}>
             API: {scannedApi ? 'ready' : 'missing'}
           </Chip>
-          <Chip variant={scannedInfo ? 'success' : 'secondary'}>
+          <Chip color={scannedInfo ? 'success' : 'default'}>
             Info: {scannedInfo ? 'ready' : 'missing'}
           </Chip>
         </View>
         <View className="flex-row flex-wrap gap-2">
-          <Button size="sm" onPress={() => startScan('qr')}>
+          <Button size="sm" onPress={onStartQr}>
             <Button.Label>Scan QR</Button.Label>
           </Button>
           <Button
             size="sm"
             variant="outline"
-            onPress={() => {
-              setScannedApi(null);
-              setScannedInfo(null);
-            }}
+            onPress={onResetScans}
           >
             <Button.Label>Reset</Button.Label>
           </Button>
@@ -186,7 +196,7 @@ const ProfileTab = () => {
           visible
           title="Scan QR"
           mode="qr"
-          onClose={() => setScanMode(null)}
+          onClose={onCloseScan}
           onScan={onScanResult}
         />
       ) : null}
