@@ -57,7 +57,7 @@ A previous attempt at Gluestack v3 / Tamagui configuration was reverted (commits
 - **Remove**:
   - `react-native-web`, `react-dom`
   - `@gluestack-ui/themed`, `@gluestack-ui/config`
-  - `@react-native-async-storage/expo-with-async-storage` plugin — replaced by the standard `@react-native-async-storage/async-storage` Expo plugin when on Expo SDK 56 (verify during install)
+- **Keep** the `@react-native-async-storage/expo-with-async-storage` plugin — the README notes it adds the Android local Maven repo needed for the AsyncStorage native module. Do not swap it for the standard plugin without verifying the Android build still resolves the native module.
 - **Keep**: `expo`, `expo-camera`, `expo-splash-screen`, `expo-status-bar`, `expo-font`, `@react-native-async-storage/async-storage`, `react-native-svg`, `buffer`, `@expo/vector-icons`, `typescript`, `@types/react`.
 
 ### App shape
@@ -146,7 +146,7 @@ No other behavioral changes.
 - Keep `userInterfaceStyle: "light"` for now.
 
 ### Babel / Metro
-- `babel.config.js` with `react-native-worklets/plugin` (or `react-native-reanimated/plugin` — whichever the HeroUI Native example uses on Reanimated 4) **last** in the list.
+- `babel.config.js` with `react-native-worklets/plugin` **last** in the list. (The example app uses Reanimated 4.1.1 + `react-native-worklets` 0.5.1; the babel plugin moved out of Reanimated into the standalone `react-native-worklets` package in Reanimated 4.)
 - `metro.config.js` wraps the config: `withUniwindConfig(wrapWithReanimatedMetroConfig(config), { cssEntryFile: './global.css', dtsFile: './src/uniwind.d.ts' })`.
 - `global.css` with `@import "tailwindcss";` and any required HeroUI Native preset import.
 - `src/uniwind.d.ts` (path) for class types.
