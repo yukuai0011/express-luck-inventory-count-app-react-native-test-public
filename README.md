@@ -1,6 +1,6 @@
 # Express Luck Inventory (React Native)
 
-Offline-first inventory recording app rebuilt with React Native, Expo, Gluestack UI, and Bun.
+Offline-first inventory recording app rebuilt with React Native, Expo, HeroUI Native, Expo Router, and Bun.
 
 ## Features
 
@@ -16,8 +16,9 @@ Offline-first inventory recording app rebuilt with React Native, Expo, Gluestack
 ## Tech Stack
 
 - React Native + Expo
-- Gluestack UI
-- Bun
+- Expo Router (tabs: Profile | Work | Outbox)
+- HeroUI Native + Uniwind (Tailwind for RN)
+- Bun (package manager + test runner)
 - AsyncStorage
 - Expo Camera (barcode scanning)
 - AsyncStorage Expo config plugin (adds Android local Maven repo)
@@ -34,30 +35,26 @@ Then open on a device/emulator, or run:
 ```bash
 bun run android
 bun run ios
-bun run web
 ```
 
-## Build APK Locally (debug)
+`bun run start` uses Expo Go. If HeroUI Native native modules are not available in Expo Go, push the change and let CI verify the APK build. **Do not** run `expo prebuild` or `gradlew` locally.
+
+## Tests
 
 ```bash
-bunx expo prebuild --platform android --non-interactive
-cd android
-./gradlew assembleDebug
+bun test
+bun run typecheck
 ```
 
-APK output:
-
-```
-android/app/build/outputs/apk/debug/app-debug.apk
-```
+Unit tests cover `lib/profile`, `lib/storage`, `lib/outbox`, and `lib/uuid`.
 
 ## GitHub Actions
 
-Workflow: `.github/workflows/android-apk.yml`
+Workflows: `.github/workflows/android-apk.yml`, `.github/workflows/android-apk-release.yml`
 
-- Runs on `push` and `pull_request`
-- Prebuilds Android and builds a debug APK
-- Uploads `app-debug.apk` as a CI artifact
+- Run on `push` and `pull_request`
+- Prebuild Android and build debug + release APKs
+- Upload APKs as CI artifacts
 
 ## Data & Privacy
 
