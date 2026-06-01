@@ -1,17 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import {
-  Button,
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  Text,
-  useToast,
-} from 'heroui-native';
+import { Button, Dialog, Text, useToast } from 'heroui-native';
 import { useOutbox } from '@/hooks/useOutbox';
 
 const OutboxTab = () => {
@@ -66,15 +55,15 @@ const OutboxTab = () => {
       </View>
 
       <Dialog isOpen={clearOpen} onOpenChange={setClearOpen}>
-        <DialogPortal>
-          <DialogOverlay />
-          <DialogContent>
-            <DialogClose variant="ghost" />
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content>
+            <Dialog.Close variant="ghost" />
             <View className="mb-5 gap-1.5">
-              <DialogTitle>Clear all pending submissions?</DialogTitle>
-              <DialogDescription>
+              <Dialog.Title>Clear all pending submissions?</Dialog.Title>
+              <Dialog.Description>
                 This permanently removes every queued request.
-              </DialogDescription>
+              </Dialog.Description>
             </View>
             <View className="flex-row justify-end gap-3">
               <Button
@@ -88,8 +77,8 @@ const OutboxTab = () => {
                 <Button.Label>OK</Button.Label>
               </Button>
             </View>
-          </DialogContent>
-        </DialogPortal>
+          </Dialog.Content>
+        </Dialog.Portal>
       </Dialog>
     </ScrollView>
   );
