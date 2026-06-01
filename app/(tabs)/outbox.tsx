@@ -5,7 +5,7 @@ import { OutboxList } from '../../components/OutboxList';
 
 export default function OutboxScreen() {
   const { outbox, sync, clear } = useOutbox();
-  const toast = useToast();
+  const { toast } = useToast();
   const empty = outbox.length === 0;
 
   const onSync = async () => {
@@ -13,7 +13,7 @@ export default function OutboxScreen() {
     toast.show({
       placement: 'top',
       variant: n > 0 ? 'success' : 'default',
-      message: n > 0 ? `Synced ${n} item(s)` : 'Nothing synced',
+      label: n > 0 ? `Synced ${n} item(s)` : 'Nothing synced',
     });
   };
 

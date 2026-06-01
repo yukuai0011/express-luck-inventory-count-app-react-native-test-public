@@ -10,7 +10,7 @@ export default function ProfileScreen() {
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
   const [bearerToken, setBearerToken] = useState(profile?.bearerToken ?? '');
-  const toast = useToast();
+  const { toast } = useToast();
 
   const onSave = async (api: string, info: RecordingInfo, token: string) => {
     await setProfile({
@@ -20,7 +20,7 @@ export default function ProfileScreen() {
       locationCode: info.locationCode,
       bearerToken: token.trim() ? token.trim() : null,
     });
-    toast.show({ placement: 'top', variant: 'success', message: 'Profile saved' });
+    toast.show({ placement: 'top', variant: 'success', label: 'Profile saved' });
   };
 
   const onClear = async () => {

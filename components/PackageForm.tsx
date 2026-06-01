@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import {
   Button,
   Card,
-  HStack,
+  Input,
   Label,
   Switch,
   Text,
@@ -45,9 +46,9 @@ export function PackageForm({
         <Card.Description>Use your saved profile to submit package records.</Card.Description>
       </Card.Header>
       <Card.Body className="gap-3">
-        <HStack className="gap-2 items-center">
+        <View className="flex-row gap-2 items-center">
           <TextField className="flex-1">
-            <TextField.Input
+            <Input
               value={packageNo}
               onChangeText={setPackageNo}
               placeholder="Scan or type package number"
@@ -56,14 +57,14 @@ export function PackageForm({
           <Button variant="secondary" onPress={openBarcodeScanner}>
             <Button.Label>Scan</Button.Label>
           </Button>
-        </HStack>
+        </View>
 
-        <HStack className="gap-2 items-center">
+        <View className="flex-row gap-2 items-center">
           <Switch isSelected={intact} onSelectedChange={setIntact} />
           <Label>Package intact</Label>
-        </HStack>
+        </View>
 
-        <HStack className="gap-2 items-center">
+        <View className="flex-row gap-2 items-center">
           <Button
             isIconOnly
             variant="secondary"
@@ -75,7 +76,7 @@ export function PackageForm({
             <Text>-</Text>
           </Button>
           <TextField className="w-32" isDisabled={intact}>
-            <TextField.Input
+            <Input
               value={String(quantity)}
               editable={false}
               textAlign="center"
@@ -92,7 +93,7 @@ export function PackageForm({
           >
             <Text>+</Text>
           </Button>
-        </HStack>
+        </View>
 
         <Button onPress={onSubmit}>
           <Button.Label>Submit</Button.Label>

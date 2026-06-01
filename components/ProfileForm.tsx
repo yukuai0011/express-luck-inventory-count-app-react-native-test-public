@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import {
   Button,
   Card,
-  HStack,
+  Input,
   Separator,
   Text,
   TextArea,
@@ -39,7 +40,7 @@ export function ProfileForm({
   onClear,
   summary,
 }: Props) {
-  const toast = useToast();
+  const { toast } = useToast();
   const [pasteJson, setPasteJson] = useState('');
 
   const handleQrText = useCallback(
@@ -64,7 +65,7 @@ export function ProfileForm({
     registerScanHandler((value) => {
       const ok = handleQrText(value);
       if (!ok) {
-        toast.show({ placement: 'top', variant: 'default', message: 'Not JSON or unexpected structure' });
+        toast.show({ placement: 'top', variant: 'default', label: 'Not JSON or unexpected structure' });
       }
     });
     router.push('/(modal)/scan?mode=qr');
@@ -73,14 +74,14 @@ export function ProfileForm({
   const onDetectPaste = useCallback(() => {
     const ok = handleQrText(pasteJson.trim());
     if (!ok) {
-      toast.show({ placement: 'top', variant: 'default', message: 'Not valid JSON or unexpected format' });
+      toast.show({ placement: 'top', variant: 'default', label: 'Not valid JSON or unexpected format' });
     }
   }, [handleQrText, pasteJson, toast]);
 
   const onReset = useCallback(() => {
     setScannedApi(null);
     setScannedInfo(null);
-    toast.show({ placement: 'top', variant: 'default', message: 'Reset' });
+    toast.show({ placement: 'top', variant: 'default', label: 'Reset' });
   }, [setScannedApi, setScannedInfo, toast]);
 
   const canSave = Boolean(scannedApi && scannedInfo);
@@ -94,31 +95,29 @@ export function ProfileForm({
         </Card.Description>
       </Card.Header>
       <Card.Body className="gap-3">
-        <HStack className="gap-2 flex-wrap">
+        <View className="flex-row gap-2 flex-wrap">
           <Pill ok={Boolean(scannedApi)} label={`API Endpoint: ${scannedApi ? 'ready' : 'missing'}`} />
           <Pill ok={Boolean(scannedInfo)} label={`Recording Info: ${scannedInfo ? 'ready' : 'missing'}`} />
-        </HStack>
+        </View>
 
-        <HStack className="gap-2 flex-wrap">
+        <View className="flex-row gap-2 flex-wrap">
           <Button onPress={openQrScanner}>
             <Button.Label>Scan QR</Button.Label>
           </Button>
           <Button variant="tertiary" onPress={onReset}>
             <Button.Label>Reset</Button.Label>
           </Button>
-        </HStack>
+        </View>
 
         <Separator className="my-1" />
 
         <Text className="text-foreground">Paste JSON instead</Text>
-        <TextArea>
-          <TextArea.Input
-            value={pasteJson}
-            onChangeText={setPasteJson}
-            placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
-            autoCapitalize="none"
-          />
-        </TextArea>
+        <TextArea
+          value={pasteJson}
+          onChangeText={setPasteJson}
+          placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
+          autoCapitalize="none"
+        />
         <Button variant="secondary" onPress={onDetectPaste}>
           <Button.Label>Detect</Button.Label>
         </Button>
@@ -127,7 +126,7 @@ export function ProfileForm({
 
         <Text className="text-foreground">Advanced: Optional Bearer Token</Text>
         <TextField>
-          <TextField.Input
+          <Input
             value={bearerToken}
             onChangeText={setBearerToken}
             placeholder="Bearer token (optional)"
@@ -136,14 +135,14 @@ export function ProfileForm({
           />
         </TextField>
 
-        <HStack className="gap-2 flex-wrap">
+        <View className="flex-row gap-2 flex-wrap">
           <Button isDisabled={!canSave} onPress={() => onSave(scannedApi!, scannedInfo!, bearerToken)}>
             <Button.Label>Save Profile</Button.Label>
           </Button>
           <Button variant="tertiary" onPress={onClear}>
             <Button.Label>Clear Saved Profile</Button.Label>
           </Button>
-        </HStack>
+        </View>
 
         <Text className="text-foreground">Current Profile</Text>
         <ResultCard>{summary}</ResultCard>

@@ -11,7 +11,7 @@ export default function ScanScreen() {
   const isQr = mode === 'qr';
   const [permission, requestPermission] = useCameraPermissions();
   const [handled, setHandled] = useState(false);
-  const toast = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!permission) return;
@@ -39,7 +39,7 @@ export default function ScanScreen() {
         }
       }
       if (!ok) {
-        toast.show({ placement: 'top', variant: 'default', message: 'Not JSON or unexpected structure; keep scanning…' });
+        toast.show({ placement: 'top', variant: 'default', label: 'Not JSON or unexpected structure; keep scanning…' });
         setHandled(false);
         return;
       }

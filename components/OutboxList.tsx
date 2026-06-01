@@ -1,5 +1,5 @@
-import { Alert } from 'react-native';
-import { Button, Card, HStack, Text, useToast } from 'heroui-native';
+import { Alert, View } from 'react-native';
+import { Button, Card, Text, useToast } from 'heroui-native';
 
 type Props = {
   count: number;
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export function OutboxList({ count, empty, onSync, onClear }: Props) {
-  const toast = useToast();
+  const { toast } = useToast();
 
   const confirmClear = () => {
     Alert.alert('Confirm', 'Clear all pending submissions?', [
@@ -19,7 +19,7 @@ export function OutboxList({ count, empty, onSync, onClear }: Props) {
         style: 'destructive',
         onPress: async () => {
           await onClear();
-          toast.show({ placement: 'top', variant: 'default', message: 'Queue cleared' });
+          toast.show({ placement: 'top', variant: 'default', label: 'Queue cleared' });
         },
       },
     ]);
@@ -32,14 +32,14 @@ export function OutboxList({ count, empty, onSync, onClear }: Props) {
         <Card.Description>Pending submissions: {count}</Card.Description>
       </Card.Header>
       <Card.Body className="gap-3">
-        <HStack className="gap-2 flex-wrap">
+        <View className="flex-row gap-2 flex-wrap">
           <Button variant="secondary" isDisabled={empty} onPress={onSync}>
             <Button.Label>Sync now</Button.Label>
           </Button>
           <Button variant="tertiary" isDisabled={empty} onPress={confirmClear}>
             <Button.Label>Clear</Button.Label>
           </Button>
-        </HStack>
+        </View>
         {empty ? (
           <Text className="text-muted">No pending submissions.</Text>
         ) : null}
