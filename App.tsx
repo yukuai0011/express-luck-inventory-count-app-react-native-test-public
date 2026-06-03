@@ -5,7 +5,6 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
-  Text,
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -16,13 +15,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { useToast } from 'heroui-native/toast';
 import Button from 'heroui-native/button';
-import Badge from 'heroui-native/badge';
+import Chip from 'heroui-native/chip';
 import Input from 'heroui-native/input';
-import TextArea from 'heroui-native/textarea';
+import TextArea from 'heroui-native/text-area';
 import Switch from 'heroui-native/switch';
 import Separator from 'heroui-native/separator';
 import Card from 'heroui-native/card';
-import Typography from 'heroui-native/typography';
+import Text from 'heroui-native/text';
 
 type RecordingInfo = {
   orderNo: string;
@@ -122,9 +121,9 @@ const ScanModal = ({
       <View className="flex-1 bg-white">
         <SafeAreaView style={{ flex: 1 }}>
           <View className="flex-row items-center justify-between px-4 py-3">
-            <Typography.Heading className="text-lg font-semibold text-black">
+            <Text.Heading className="text-lg font-semibold text-black">
               {title}
-            </Typography.Heading>
+            </Text.Heading>
             <Button size="sm" variant="outline" onPress={onClose}>
               <Button.Label>Close</Button.Label>
             </Button>
@@ -446,26 +445,26 @@ export default function App() {
           <StatusBar style="dark" />
           <ScrollView className="flex-1" contentContainerClassName="pb-6" keyboardShouldPersistTaps="handled">
             <View className="flex-col gap-3 px-4 py-4">
-              <Typography.Heading className="text-2xl font-bold text-black">
+              <Text.Heading className="text-2xl font-bold text-black">
                 Inventory Scanner PoC
-              </Typography.Heading>
+              </Text.Heading>
 
               <Card className="border border-gray-200 rounded-xl p-4 bg-white">
                 <View className="flex-col gap-2">
-                  <Typography.Heading className="text-lg font-semibold text-black">
+                  <Text.Heading className="text-lg font-semibold text-black">
                     1) Recording Profile
-                  </Typography.Heading>
-                  <Typography.Paragraph className="text-sm text-black/70">
+                  </Text.Heading>
+                  <Text.Paragraph className="text-sm text-black/70">
                     Scan two QR codes in any order to establish a profile: API
                     Endpoint and Recording Info. Then save.
-                  </Typography.Paragraph>
+                  </Text.Paragraph>
                   <View className="flex-row gap-2">
-                    <Badge variant={scannedApi ? 'success' : 'default'}>
+                    <Chip color={scannedApi ? 'success' : 'default'} size="sm">
                       API Endpoint: {scannedApi ? 'ready' : 'missing'}
-                    </Badge>
-                    <Badge variant={scannedInfo ? 'success' : 'default'}>
+                    </Chip>
+                    <Chip color={scannedInfo ? 'success' : 'default'} size="sm">
                       Recording Info: {scannedInfo ? 'ready' : 'missing'}
-                    </Badge>
+                    </Chip>
                   </View>
                   <View className="flex-row gap-2 flex-wrap">
                     <Button size="sm" onPress={() => startScan('qr')}>
@@ -485,9 +484,9 @@ export default function App() {
 
                   <Separator className="my-2" />
 
-                  <Typography.Paragraph className="text-sm text-black">
+                  <Text.Paragraph className="text-sm text-black">
                     Paste JSON instead
-                  </Typography.Paragraph>
+                  </Text.Paragraph>
                   <TextArea
                     placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
                     value={pasteJson}
@@ -500,9 +499,9 @@ export default function App() {
 
                   <Separator className="my-2" />
 
-                  <Typography.Paragraph className="text-sm text-black">
+                  <Text.Paragraph className="text-sm text-black">
                     Advanced: Optional Bearer Token
-                  </Typography.Paragraph>
+                  </Text.Paragraph>
                   <Input
                     placeholder="Bearer token (optional)"
                     value={bearerToken}
@@ -528,21 +527,21 @@ export default function App() {
                     </Button>
                   </View>
 
-                  <Typography.Paragraph className="text-sm text-black">
+                  <Text.Paragraph className="text-sm text-black">
                     Current Profile
-                  </Typography.Paragraph>
+                  </Text.Paragraph>
                   <SummaryText>{profileSummary}</SummaryText>
                 </View>
               </Card>
 
               <Card className="border border-gray-200 rounded-xl p-4 bg-white">
                 <View className="flex-col gap-2">
-                  <Typography.Heading className="text-lg font-semibold text-black">
+                  <Text.Heading className="text-lg font-semibold text-black">
                     2) Work
-                  </Typography.Heading>
-                  <Typography.Paragraph className="text-sm text-black/70">
+                  </Text.Heading>
+                  <Text.Paragraph className="text-sm text-black/70">
                     Use your saved profile to submit package records.
-                  </Typography.Paragraph>
+                  </Text.Paragraph>
                   <View className="flex-row gap-2 items-center">
                     <View className="flex-1">
                       <Input
@@ -562,9 +561,9 @@ export default function App() {
 
                   <View className="flex-row gap-2 items-center">
                     <Switch value={intact} onValueChange={setIntact} />
-                    <Typography.Paragraph className="text-sm text-black">
+                    <Text.Paragraph className="text-sm text-black">
                       Package intact
-                    </Typography.Paragraph>
+                    </Text.Paragraph>
                   </View>
 
                   <View
@@ -616,12 +615,12 @@ export default function App() {
 
               <Card className="border border-gray-200 rounded-xl p-4 bg-white">
                 <View className="flex-col gap-2">
-                  <Typography.Heading className="text-lg font-semibold text-black">
+                  <Text.Heading className="text-lg font-semibold text-black">
                     Offline queue
-                  </Typography.Heading>
-                  <Typography.Paragraph className="text-sm text-black">
+                  </Text.Heading>
+                  <Text.Paragraph className="text-sm text-black">
                     Pending submissions: {outbox.length}
-                  </Typography.Paragraph>
+                  </Text.Paragraph>
                   <View className="flex-row gap-2 flex-wrap">
                     <Button size="sm" variant="outline" onPress={onSyncNow}>
                       <Button.Label>Sync now</Button.Label>
