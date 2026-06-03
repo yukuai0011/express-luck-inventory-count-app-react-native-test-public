@@ -30,12 +30,6 @@
           "backgroundColor": "#ffffff"
         }
       ]
-    ],
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "experiments": {
-      "baseUrl": "/express-luck-inventory-count-app-react-native-test-public"
-    }
+    ]
   }
 }

@@ -2,37 +2,27 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Modal,
-  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
-  StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CameraView, BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
-import {
-  Badge,
-  BadgeText,
-  Box,
-  Button,
-  ButtonText,
-  Divider,
-  GluestackUIProvider,
-  Heading,
-  HStack,
-  Input,
-  InputField,
-  Switch,
-  Text,
-  Textarea,
-  TextareaInput,
-  useToast,
-  VStack,
-} from '@gluestack-ui/themed';
-import { config } from '@gluestack-ui/config';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { HeroUINativeProvider } from 'heroui-native/provider';
+import { useToast } from 'heroui-native/toast';
+import Button from 'heroui-native/button';
+import Badge from 'heroui-native/badge';
+import Input from 'heroui-native/input';
+import TextArea from 'heroui-native/textarea';
+import Switch from 'heroui-native/switch';
+import Separator from 'heroui-native/separator';
+import Card from 'heroui-native/card';
+import Typography from 'heroui-native/typography';
 
 type RecordingInfo = {
   orderNo: string;
@@ -100,18 +90,10 @@ const parseRecordingInfo = (value: Record<string, unknown>): RecordingInfo | nul
   };
 };
 
-const pillVariant = (ok: boolean) => (ok ? '$success600' : '$backgroundDark500');
-
-const SummaryText = ({ children }: { children: string }) => (
-  <Box
-    borderWidth={1}
-    borderColor="$borderLight200"
-    borderRadius="$md"
-    p="$3"
-    bg="$backgroundLight0"
-  >
-    <Text style={styles.codeText}>{children}</Text>
-  </Box>
+const SummaryText = ({ children }: { children: React.ReactNode }) => (
+  <View className="border border-gray-200 rounded-md p-3 bg-white">
+    <Text className="font-mono text-xs text-black">{children}</Text>
+  </View>
 );
 
 const ScanModal = ({
@@ -137,17 +119,19 @@ const ScanModal = ({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <Box flex={1} bg="$backgroundLight0">
-        <SafeAreaView style={styles.safeArea}>
-          <HStack alignItems="center" justifyContent="space-between" px="$4" py="$3">
-            <Heading size="md">{title}</Heading>
-            <Button variant="outline" onPress={onClose} size="sm">
-              <ButtonText>Close</ButtonText>
+      <View className="flex-1 bg-white">
+        <SafeAreaView style={{ flex: 1 }}>
+          <View className="flex-row items-center justify-between px-4 py-3">
+            <Typography.Heading className="text-lg font-semibold text-black">
+              {title}
+            </Typography.Heading>
+            <Button size="sm" variant="outline" onPress={onClose}>
+              <Button.Label>Close</Button.Label>
             </Button>
-          </HStack>
-          <View style={styles.scannerContainer}>
+          </View>
+          <View className="flex-1 overflow-hidden mx-4 rounded-xl">
             <CameraView
-              style={StyleSheet.absoluteFill}
+              style={{ flex: 1 }}
               barcodeScannerSettings={
                 mode === 'qr' ? { barcodeTypes: ['qr'] } : undefined
               }
@@ -165,7 +149,7 @@ const ScanModal = ({
             />
           </View>
         </SafeAreaView>
-      </Box>
+      </View>
     </Modal>
   );
 };
@@ -206,13 +190,9 @@ export default function App() {
   const showToast = useCallback(
     (message: string) => {
       toast.show({
+        title: message,
         placement: 'top',
-        duration: 2000,
-        render: () => (
-          <Box bg="$backgroundDark900" px="$3" py="$2" borderRadius="$md">
-            <Text color="$textLight0">{message}</Text>
-          </Box>
-        ),
+        timeout: 2000,
       });
     },
     [toast]
@@ -280,7 +260,7 @@ export default function App() {
     if (response.status !== 'granted') {
       Alert.alert(
         'Info',
-        'Camera scanning is available on Android, iOS, and the Web. On this platform, please paste JSON or type the package number.'
+        'Camera scanning is available on Android and iOS. On this platform, please paste JSON or type the package number.'
       );
       return false;
     }
@@ -446,7 +426,7 @@ export default function App() {
     showToast(success > 0 ? `Synced ${success} item(s)` : 'Nothing synced');
   }, [outbox, saveOutbox, showToast]);
 
-  const onClearOutbox = useCallback(async () => {
+  const onClearOutbox = useCallback(() => {
     Alert.alert('Confirm', 'Clear all pending submissions?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -460,211 +440,212 @@ export default function App() {
   }, [saveOutbox]);
 
   return (
-    <GluestackUIProvider config={config}>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar style="dark" />
-        <Box flex={1} bg="$backgroundLight0">
-          <ScrollView
-            style={styles.scrollWrapper}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <VStack space="md" px="$4" py="$4">
-              <Heading size="lg">Inventory Scanner PoC</Heading>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <HeroUINativeProvider>
+        <SafeAreaView style={{ flex: 1 }}>
+          <StatusBar style="dark" />
+          <ScrollView className="flex-1" contentContainerClassName="pb-6" keyboardShouldPersistTaps="handled">
+            <View className="flex-col gap-3 px-4 py-4">
+              <Typography.Heading className="text-2xl font-bold text-black">
+                Inventory Scanner PoC
+              </Typography.Heading>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">1) Recording Profile</Heading>
-                  <Text>
-                    Scan two QR codes in any order to establish a profile: API Endpoint and Recording Info. Then save.
-                  </Text>
-                  <HStack space="sm">
-                    <Badge bg={pillVariant(Boolean(scannedApi))}>
-                      <BadgeText color="$textLight0">
-                        API Endpoint: {scannedApi ? 'ready' : 'missing'}
-                      </BadgeText>
+              <Card className="border border-gray-200 rounded-xl p-4 bg-white">
+                <View className="flex-col gap-2">
+                  <Typography.Heading className="text-lg font-semibold text-black">
+                    1) Recording Profile
+                  </Typography.Heading>
+                  <Typography.Paragraph className="text-sm text-black/70">
+                    Scan two QR codes in any order to establish a profile: API
+                    Endpoint and Recording Info. Then save.
+                  </Typography.Paragraph>
+                  <View className="flex-row gap-2">
+                    <Badge variant={scannedApi ? 'success' : 'default'}>
+                      API Endpoint: {scannedApi ? 'ready' : 'missing'}
                     </Badge>
-                    <Badge bg={pillVariant(Boolean(scannedInfo))}>
-                      <BadgeText color="$textLight0">
-                        Recording Info: {scannedInfo ? 'ready' : 'missing'}
-                      </BadgeText>
+                    <Badge variant={scannedInfo ? 'success' : 'default'}>
+                      Recording Info: {scannedInfo ? 'ready' : 'missing'}
                     </Badge>
-                  </HStack>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={() => startScan('qr')} size="sm">
-                      <ButtonText>Scan QR</ButtonText>
+                  </View>
+                  <View className="flex-row gap-2 flex-wrap">
+                    <Button size="sm" onPress={() => startScan('qr')}>
+                      <Button.Label>Scan QR</Button.Label>
                     </Button>
                     <Button
+                      size="sm"
+                      variant="outline"
                       onPress={() => {
                         setScannedApi(null);
                         setScannedInfo(null);
                       }}
-                      variant="outline"
-                      size="sm"
                     >
-                      <ButtonText>Reset</ButtonText>
+                      <Button.Label>Reset</Button.Label>
                     </Button>
-                  </HStack>
+                  </View>
 
-                  <Divider my="$2" />
-                  <Text>Paste JSON instead</Text>
-                  <Textarea>
-                    <TextareaInput
-                      value={pasteJson}
-                      onChangeText={setPasteJson}
-                      placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
-                      autoCapitalize="none"
-                    />
-                  </Textarea>
-                  <Button onPress={onDetectPaste} variant="outline" size="sm">
-                    <ButtonText>Detect</ButtonText>
+                  <Separator className="my-2" />
+
+                  <Typography.Paragraph className="text-sm text-black">
+                    Paste JSON instead
+                  </Typography.Paragraph>
+                  <TextArea
+                    placeholder='{"apiEndpoint":"<https://...>"} or {"orderNo":"1234","recordingNo":1,"locationCode":"FG HU"}'
+                    value={pasteJson}
+                    onChangeText={setPasteJson}
+                    autoCapitalize="none"
+                  />
+                  <Button size="sm" variant="outline" onPress={onDetectPaste}>
+                    <Button.Label>Detect</Button.Label>
                   </Button>
 
-                  <Divider my="$2" />
-                  <Text>Advanced: Optional Bearer Token</Text>
-                  <Input>
-                    <InputField
-                      value={bearerToken}
-                      onChangeText={setBearerToken}
-                      placeholder="Bearer token (optional)"
-                      secureTextEntry
-                      autoCapitalize="none"
-                    />
-                  </Input>
+                  <Separator className="my-2" />
 
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSaveProfile} isDisabled={!hasBothScans} size="sm">
-                      <ButtonText>Save Profile</ButtonText>
-                    </Button>
-                    <Button onPress={onClearSavedProfile} variant="outline" size="sm">
-                      <ButtonText>Clear Saved Profile</ButtonText>
-                    </Button>
-                  </HStack>
+                  <Typography.Paragraph className="text-sm text-black">
+                    Advanced: Optional Bearer Token
+                  </Typography.Paragraph>
+                  <Input
+                    placeholder="Bearer token (optional)"
+                    value={bearerToken}
+                    onChangeText={setBearerToken}
+                    secureTextEntry
+                    autoCapitalize="none"
+                  />
 
-                  <Text>Current Profile</Text>
-                  <SummaryText>{profileSummary}</SummaryText>
-                </VStack>
-              </Box>
-
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">2) Work</Heading>
-                  <Text>Use your saved profile to submit package records.</Text>
-                  <HStack space="sm" alignItems="center">
-                    <Box flex={1}>
-                      <Input>
-                        <InputField
-                          value={packageNo}
-                          onChangeText={setPackageNo}
-                          placeholder="Scan or type package number"
-                        />
-                      </Input>
-                    </Box>
-                    <Button onPress={() => startScan('barcode')} variant="outline" size="sm">
-                      <ButtonText>Scan</ButtonText>
-                    </Button>
-                  </HStack>
-
-                  <HStack space="sm" alignItems="center">
-                    <Switch value={intact} onValueChange={setIntact} />
-                    <Text>Package intact</Text>
-                  </HStack>
-
-                  <HStack space="sm" alignItems="center" opacity={intact ? 0.5 : 1}>
-                    <Pressable
-                      onPress={() => setQuantity((value) => Math.max(0, value - 1))}
-                      disabled={intact}
-                      style={styles.iconButton}
+                  <View className="flex-row gap-2 flex-wrap">
+                    <Button
+                      size="sm"
+                      onPress={onSaveProfile}
+                      isDisabled={!hasBothScans}
                     >
-                      <MaterialIcons name="remove-circle-outline" size={26} color="#444" />
+                      <Button.Label>Save Profile</Button.Label>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onPress={onClearSavedProfile}
+                    >
+                      <Button.Label>Clear Saved Profile</Button.Label>
+                    </Button>
+                  </View>
+
+                  <Typography.Paragraph className="text-sm text-black">
+                    Current Profile
+                  </Typography.Paragraph>
+                  <SummaryText>{profileSummary}</SummaryText>
+                </View>
+              </Card>
+
+              <Card className="border border-gray-200 rounded-xl p-4 bg-white">
+                <View className="flex-col gap-2">
+                  <Typography.Heading className="text-lg font-semibold text-black">
+                    2) Work
+                  </Typography.Heading>
+                  <Typography.Paragraph className="text-sm text-black/70">
+                    Use your saved profile to submit package records.
+                  </Typography.Paragraph>
+                  <View className="flex-row gap-2 items-center">
+                    <View className="flex-1">
+                      <Input
+                        placeholder="Scan or type package number"
+                        value={packageNo}
+                        onChangeText={setPackageNo}
+                      />
+                    </View>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onPress={() => startScan('barcode')}
+                    >
+                      <Button.Label>Scan</Button.Label>
+                    </Button>
+                  </View>
+
+                  <View className="flex-row gap-2 items-center">
+                    <Switch value={intact} onValueChange={setIntact} />
+                    <Typography.Paragraph className="text-sm text-black">
+                      Package intact
+                    </Typography.Paragraph>
+                  </View>
+
+                  <View
+                    className={`flex-row gap-2 items-center ${
+                      intact ? 'opacity-50' : ''
+                    }`}
+                  >
+                    <Pressable
+                      onPress={() =>
+                        setQuantity((value) => Math.max(0, value - 1))
+                      }
+                      disabled={intact}
+                      className="p-1"
+                    >
+                      <MaterialIcons
+                        name="remove-circle-outline"
+                        size={26}
+                        color="#444"
+                      />
                     </Pressable>
-                    <Box width={120}>
-                      <Input isDisabled={intact}>
-                        <InputField
-                          value={String(quantity)}
-                          editable={false}
-                          textAlign="center"
-                          placeholder="Quantity"
-                        />
-                      </Input>
-                    </Box>
+                    <View className="w-[120px]">
+                      <Input
+                        value={String(quantity)}
+                        editable={false}
+                        textAlign="center"
+                        placeholder="Quantity"
+                      />
+                    </View>
                     <Pressable
                       onPress={() => setQuantity((value) => value + 1)}
                       disabled={intact}
-                      style={styles.iconButton}
+                      className="p-1"
                     >
-                      <MaterialIcons name="add-circle-outline" size={26} color="#444" />
+                      <MaterialIcons
+                        name="add-circle-outline"
+                        size={26}
+                        color="#444"
+                      />
                     </Pressable>
-                  </HStack>
+                  </View>
 
                   <Button onPress={onSubmit}>
-                    <ButtonText>Submit</ButtonText>
+                    <Button.Label>Submit</Button.Label>
                   </Button>
 
                   {result ? <SummaryText>{result}</SummaryText> : null}
-                </VStack>
-              </Box>
+                </View>
+              </Card>
 
-              <Box style={styles.card}>
-                <VStack space="sm">
-                  <Heading size="md">Offline queue</Heading>
-                  <Text>Pending submissions: {outbox.length}</Text>
-                  <HStack space="sm" flexWrap="wrap">
-                    <Button onPress={onSyncNow} variant="outline" size="sm">
-                      <ButtonText>Sync now</ButtonText>
+              <Card className="border border-gray-200 rounded-xl p-4 bg-white">
+                <View className="flex-col gap-2">
+                  <Typography.Heading className="text-lg font-semibold text-black">
+                    Offline queue
+                  </Typography.Heading>
+                  <Typography.Paragraph className="text-sm text-black">
+                    Pending submissions: {outbox.length}
+                  </Typography.Paragraph>
+                  <View className="flex-row gap-2 flex-wrap">
+                    <Button size="sm" variant="outline" onPress={onSyncNow}>
+                      <Button.Label>Sync now</Button.Label>
                     </Button>
-                    <Button onPress={onClearOutbox} variant="outline" size="sm">
-                      <ButtonText>Clear</ButtonText>
+                    <Button size="sm" variant="outline" onPress={onClearOutbox}>
+                      <Button.Label>Clear</Button.Label>
                     </Button>
-                  </HStack>
-                </VStack>
-              </Box>
-            </VStack>
+                  </View>
+                </View>
+              </Card>
+            </View>
           </ScrollView>
-        </Box>
 
-        {scanMode ? (
-          <ScanModal
-            visible={Boolean(scanMode)}
-            title={scanTitle}
-            mode={scanMode}
-            onClose={() => setScanMode(null)}
-            onScan={onScanResult}
-          />
-        ) : null}
-      </SafeAreaView>
-    </GluestackUIProvider>
+          {scanMode ? (
+            <ScanModal
+              visible={Boolean(scanMode)}
+              title={scanTitle}
+              mode={scanMode}
+              onClose={() => setScanMode(null)}
+              onScan={onScanResult}
+            />
+          ) : null}
+        </SafeAreaView>
+      </HeroUINativeProvider>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  scrollWrapper: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 24,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: '#ffffff',
-  },
-  scannerContainer: {
-    flex: 1,
-    overflow: 'hidden',
-    marginHorizontal: 16,
-    borderRadius: 12,
-  },
-  iconButton: {
-    padding: 4,
-  },
-  codeText: {
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
-    fontSize: 12,
-  },
-});
