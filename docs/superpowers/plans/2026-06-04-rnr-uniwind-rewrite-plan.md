@@ -185,28 +185,39 @@ Replace `tsconfig.json` with:
 }
 ```
 
-- [ ] **Step 5: Re-install with bun**
+- [ ] **Step 5: Replace `index.ts` with the expo-router entry**
+
+Overwrite `index.ts` with the one-liner expo-router expects:
+
+```ts
+import "expo-router/entry";
+```
+
+(The old `registerRootComponent(App)` form is no longer used; expo-router's
+entry point registers the route tree automatically.)
+
+- [ ] **Step 6: Re-install with bun**
 
 Run: `bun install`
 Expected: installs the new deps, refreshes `bun.lock`. Some peer-dep warnings are fine.
 
-- [ ] **Step 6: Sanity-check rnr's default app compiles via web export**
+- [ ] **Step 7: Sanity-check rnr's default app compiles via web export**
 
 Run: `bunx expo export --platform web --output-dir dist-check --clear`
 Expected: produces `dist-check/` with `index.html`, an `_expo/static/js/web-*.js` bundle, and CSS. If a CSS-related error appears, the most likely cause is uniwind not being picked up — go to metro.config.js and confirm `withUniwindConfig` is the outermost wrapper.
 
 Clean up: `rm -rf dist-check`
 
-- [ ] **Step 7: Delete the temp scaffold**
+- [ ] **Step 8: Delete the temp scaffold**
 
 ```bash
 rm -rf tmp-scaffold
 ```
 
-- [ ] **Step 8: Commit the merge**
+- [ ] **Step 9: Commit the merge**
 
 ```bash
-git add app components global.css metro.config.js tailwind.config.js components.json lib package.json bun.lock tsconfig.json
+git add app components global.css metro.config.js tailwind.config.js components.json lib package.json bun.lock tsconfig.json index.ts
 git -c user.name="claude" -c user.email="claude@local" commit -m "feat: scaffold rnr minimal-uniwind template"
 ```
 
@@ -1039,7 +1050,6 @@ git -c user.name="claude" -c user.email="claude@local" commit -m "feat(scan): ad
 ```tsx
 import { useCallback, useMemo, useState } from "react";
 import { Alert, View } from "react-native";
-import { useRouter } from "expo-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -1056,7 +1066,6 @@ import { parseJson, parseRecordingInfo, sanitizeEndpoint, type RecordingInfo } f
 export const ProfileCard = () => {
   const { profile, setProfile } = useAppState();
   const toast = useToast();
-  const router = useRouter();
   const [scannedApi, setScannedApi] = useState<string | null>(null);
   const [scannedInfo, setScannedInfo] = useState<RecordingInfo | null>(null);
   const [pasteJson, setPasteJson] = useState("");
@@ -1219,8 +1228,6 @@ export const ProfileCard = () => {
           return false;
         }}
       />
-      {/* router reserved for future deep-link flow */}
-      {router ? null : null}
     </Card>
   );
 };
