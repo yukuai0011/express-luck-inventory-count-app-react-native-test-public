@@ -3,9 +3,10 @@
     "name": "Express Luck Inventory",
     "slug": "express-luck-inventory",
     "version": "1.0.0",
+    "scheme": "express-luck-inventory",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
