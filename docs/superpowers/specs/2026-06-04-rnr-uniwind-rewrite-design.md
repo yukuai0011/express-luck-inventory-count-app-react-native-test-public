@@ -161,9 +161,10 @@ A small custom layer with no new dependencies:
 - `ToastProvider` renders nothing by default and exposes a `useToast()` hook
   returning `{ show(message) }`.
 - Internal state: a queue of `{ id, message }` items, max 3 visible.
-- Each item renders as a `<View>` with `bg-gray-900 dark:bg-gray-100` +
-  contrasting text, animated with `react-native-reanimated` (already a dep of
-  the rnr template) for slide-in / fade-out.
+- Each item renders as a `<View>` with `bg-gray-900 dark:bg-gray-100` plus
+  `text-white dark:text-gray-900` for the message text, animated with
+  `react-native-reanimated` (already a dep of the rnr template) for slide-in
+  / fade-out.
 - Position: top of the screen, padded below the status bar.
 - Auto-dismiss after 2000ms. `show()` deduplicates by message text.
 - `useToast()` is used in `ProfileCard` (Detect / Save / Clear), `WorkCard`
@@ -196,11 +197,12 @@ only place Android gets built.
 
 ## Web vs. native considerations
 
-- **Camera:** `expo-camera`'s `CameraView` does not render on web. The
-  `ScanModal` detects `Platform.OS === 'web'` and renders a "Camera scanning
-  not available on web — paste JSON or type the package number" message. The
-  existing paste-JSON fallback in `ProfileCard` and the text input in
-  `WorkCard` cover all flows on web.
+- **Camera:** `expo-camera`'s `CameraView` does not reliably render the live
+  camera feed inside a web browser, and the barcode-scanning settings are
+  unsupported on web. The `ScanModal` detects `Platform.OS === 'web'` and
+  renders a "Camera scanning not available on web — paste JSON or type the
+  package number" message. The existing paste-JSON fallback in `ProfileCard`
+  and the text input in `WorkCard` cover all flows on web.
 - **AsyncStorage on web:** falls back to `localStorage` via the
   `@react-native-async-storage/expo-with-async-storage` plugin (already in
   `app.json`).
