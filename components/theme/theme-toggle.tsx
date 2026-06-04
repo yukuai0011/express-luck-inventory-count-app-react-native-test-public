@@ -11,8 +11,8 @@ const THEMES = [
 ] as const;
 
 export const ThemeToggle = () => {
-  const { theme, hasAdaptiveThemes } = useUniwind();
-  const active = hasAdaptiveThemes ? "system" : theme;
+  const { theme } = useUniwind();
+  const active = theme;
 
   return (
     <View className="flex-row gap-2">
