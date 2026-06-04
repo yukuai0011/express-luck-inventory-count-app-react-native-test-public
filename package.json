@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@gluestack-ui/config": "^1.1.20",
-    "@gluestack-ui/themed": "^1.1.73",
+    "@gluestack-ui/react": "^0.1.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-async-storage/expo-with-async-storage": "^1.0.0",
     "buffer": "^6.0.3",
