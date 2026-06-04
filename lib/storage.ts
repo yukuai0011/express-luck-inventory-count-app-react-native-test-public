@@ -19,12 +19,6 @@ const STORAGE_PROFILE = "inventory_profile";
 const STORAGE_OUTBOX = "inventory_outbox";
 const STORAGE_THEME = "@theme";
 
-export const storageKeys = {
-  profile: STORAGE_PROFILE,
-  outbox: STORAGE_OUTBOX,
-  theme: STORAGE_THEME,
-} as const;
-
 export const loadProfile = async (): Promise<Profile | null> => {
   const raw = await AsyncStorage.getItem(STORAGE_PROFILE);
   if (!raw) return null;
