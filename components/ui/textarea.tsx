@@ -1,13 +1,17 @@
 import { cn } from '@/lib/utils';
 import { Platform, TextInput } from 'react-native';
 
+type TextareaProps = Omit<React.ComponentProps<typeof TextInput>, 'placeholderClassName'> & {
+  placeholderClassName?: string;
+} & React.RefAttributes<TextInput>;
+
 function Textarea({
   className,
   multiline = true,
   numberOfLines = Platform.select({ web: 2, native: 8 }), // On web, numberOfLines also determines initial height. On native, it determines the maximum height.
   placeholderClassName,
   ...props
-}: React.ComponentProps<typeof TextInput> & React.RefAttributes<TextInput>) {
+}: TextareaProps) {
   return (
     <TextInput
       className={cn(
@@ -18,6 +22,7 @@ function Textarea({
         props.editable === false && 'opacity-50',
         className
       )}
+      // @ts-expect-error placeholderClassName is a web-only prop not in React Native's TextInputProps
       placeholderClassName={cn('text-muted-foreground', placeholderClassName)}
       multiline={multiline}
       numberOfLines={numberOfLines}
