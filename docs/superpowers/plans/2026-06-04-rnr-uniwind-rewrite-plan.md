@@ -114,56 +114,64 @@ git add .gitignore
 git -c user.name="claude" -c user.email="claude@local" commit -m "chore: ignore rnr init scaffold directory"
 ```
 
-### Task 2: Merge the scaffold into the current project
+### Task 2: Cherry-pick the rnr scaffold into our project (REVISED)
+
+**Why this changed:** The actual `minimal-uniwind` scaffold (v1.0.0 of `@react-native-reusables/cli`) targets Expo SDK 55, while our project is on SDK 56. The scaffold also only ships 3 UI primitives (`button`, `icon`, `text`), no `(tabs)` route group, and uses CSS-first uniwind config (no `tailwind.config.js`). We therefore cherry-pick only the rnr-specific files and keep our existing `package.json` (so we stay on SDK 56). Additional UI primitives are added on demand via `rnr add` in later tasks.
 
 **Files:**
-- Create: many (see list below)
-- Modify: `package.json`, `tsconfig.json`, `.gitignore`
-- Delete: `tmp-scaffold/`
+- Create: `components/ui/`, `lib/utils.ts`, `lib/theme.ts`, `global.css`, `metro.config.js`, `components.json`, `babel.config.js`
+- Modify: `package.json`, `tsconfig.json`, `index.ts`
+- Delete: `tmp-scaffold/` (after copying)
 
-- [ ] **Step 1: Copy scaffolded source directories into the project**
+- [ ] **Step 1: Cherry-pick the rnr scaffold files**
 
-Run:
-```bash
-cp -R tmp-scaffold/app .
-cp -R tmp-scaffold/components .
-cp -R tmp-scaffold/lib ./lib-rnr-template
-cp tmp-scaffold/global.css ./global.css
-cp tmp-scaffold/metro.config.js ./metro.config.js
-cp tmp-scaffold/tailwind.config.js ./tailwind.config.js
-cp tmp-scaffold/components.json ./components.json
-```
-
-(We copy `lib` to `lib-rnr-template` to merge it with the current project in the next step; rnr only ships `utils.ts` and possibly `useColorScheme.ts`, so the conflict is minor.)
-
-- [ ] **Step 2: Keep the rnr `lib/utils.ts` next to our new `lib/*`**
+The scaffold lives at `tmp-scaffold/express-luck-inventory/` (the CLI wraps the project in a folder named after the project). Run:
 
 ```bash
-mkdir -p lib
-cp lib-rnr-template/utils.ts lib/utils.ts
-rm -rf lib-rnr-template
+mkdir -p components
+cp -R tmp-scaffold/express-luck-inventory/components/ui components/ui
+cp tmp-scaffold/express-luck-inventory/components/ui/button.tsx components/ui/button.tsx
+cp tmp-scaffold/express-luck-inventory/components/ui/icon.tsx components/ui/icon.tsx
+cp tmp-scaffold/express-luck-inventory/components/ui/text.tsx components/ui/text.tsx
+cp tmp-scaffold/express-luck-inventory/lib/utils.ts lib/utils.ts
+cp tmp-scaffold/express-luck-inventory/lib/theme.ts lib/theme.ts
+cp tmp-scaffold/express-luck-inventory/global.css global.css
+cp tmp-scaffold/express-luck-inventory/metro.config.js metro.config.js
+cp tmp-scaffold/express-luck-inventory/components.json components.json
+cp tmp-scaffold/express-luck-inventory/babel.config.js babel.config.js
 ```
 
-- [ ] **Step 3: Merge `package.json` dependencies**
+**Do not copy** `tmp-scaffold/express-luck-inventory/package.json` or `app.json` (different SDK, different slug).
 
-Open `package.json` and copy any missing dependency entries from `tmp-scaffold/package.json` into our `package.json`. Required additions (verify against the rnr `package.json`):
-- `expo-router` and its peer deps (`react-native-safe-area-context`, `react-native-screens`)
-- `react-native-reanimated` (Expo SDK 54+ requires `react-native-worklets` too — add it)
-- `react-native-reusables` (cli dep, may not need to be a runtime dep)
-- `uniwind`
-- `tailwindcss` (dev)
-- `tailwindcss-animate` (dev, if rnr uses it)
-- `tailwind-merge`, `clsx`, `class-variance-authority`
+- [ ] **Step 1b: Add the rest of the rnr UI primitives we'll need**
 
-Keep our existing `@react-native-async-storage/async-storage`, `expo-camera`, `expo-splash-screen`, etc.
+The plan needs `Card`, `Input`, `Textarea`, `Switch`, `Badge`, `Separator`, and `Label` (and optionally a `Tabs` content primitive). The minimal template only ships `Button`, `Icon`, `Text`. Run:
 
-Add new scripts (keep existing):
-```json
-"web:export": "expo export --platform web",
-"typecheck": "tsc --noEmit"
+```bash
+bunx --bun @react-native-reusables/cli@latest add card input textarea switch badge separator label
 ```
 
-- [ ] **Step 4: Refresh `tsconfig.json` with the rnr template + our path aliases**
+Expected: each command appends a new file to `components/ui/`, plus a corresponding `@rn-primitives/*` package to `package.json`. Resolve any version conflicts with `bunx expo install --fix` afterwards.
+
+If the CLI doesn't support batch add, run each one individually:
+
+```bash
+bunx --bun @react-native-reusables/cli@latest add card
+bunx --bun @react-native-reusables/cli@latest add input
+bunx --bun @react-native-reusables/cli@latest add textarea
+bunx --bun @react-native-reusables/cli@latest add switch
+bunx --bun @react-native-reusables/cli@latest add badge
+bunx --bun @react-native-reusables/cli@latest add separator
+bunx --bun @react-native-reusables/cli@latest add label
+```
+
+Verify: `ls components/ui/` should now show `badge.tsx button.tsx card.tsx icon.tsx input.tsx label.tsx separator.tsx switch.tsx text.tsx textarea.tsx` (or similar).
+
+- [ ] **Step 2: Verify the copied UI components compile**
+
+Open `components/ui/button.tsx`. It imports `TextClassContext` from `@/components/ui/text` and `cn` from `@/lib/utils`. Confirm both files exist. Open the newly added primitives and confirm they all import from `@/lib/utils` and `@/components/ui/text` rather than some other path.
+
+- [ ] **Step 3: Update `tsconfig.json` with the rnr template's path alias**
 
 Replace `tsconfig.json` with:
 
@@ -172,6 +180,7 @@ Replace `tsconfig.json` with:
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }
@@ -185,9 +194,9 @@ Replace `tsconfig.json` with:
 }
 ```
 
-- [ ] **Step 5: Replace `index.ts` with the expo-router entry**
+- [ ] **Step 4: Replace `index.ts` with the expo-router entry**
 
-Overwrite `index.ts` with the one-liner expo-router expects:
+Overwrite `index.ts` with:
 
 ```ts
 import "expo-router/entry";
@@ -196,15 +205,55 @@ import "expo-router/entry";
 (The old `registerRootComponent(App)` form is no longer used; expo-router's
 entry point registers the route tree automatically.)
 
+- [ ] **Step 5: Merge the rnr dependencies into our `package.json`**
+
+Open `package.json` and merge in the deps from `tmp-scaffold/express-luck-inventory/package.json`, but keep our existing SDK 56 versions for `expo`, `react`, `react-native`. Additions to add (resolve to versions compatible with our SDK 56 — for most, the same version as the scaffold works):
+
+- `expo-router`
+- `expo-constants`, `expo-linking`, `expo-system-ui` (peer helpers for expo-router)
+- `react-native-gesture-handler`
+- `react-native-keyboard-controller`
+- `react-native-reanimated`
+- `react-native-safe-area-context`
+- `react-native-screens`
+- `react-native-worklets`
+- `tailwindcss` (dev)
+- `tailwindcss-animate` (dev)
+- `tw-animate-css` (dev)
+- `tailwind-merge`
+- `clsx`
+- `class-variance-authority`
+- `uniwind`
+- `lucide-react-native`
+- `@react-navigation/native` (peer for the `Tabs` navigator)
+- `@rn-primitives/portal`
+- `@rn-primitives/slot`
+- `@rn-primitives/tabs` (only if we add Tabs UI primitive via `rnr add` later)
+- `prettier`, `prettier-plugin-tailwindcss` (dev)
+
+Keep our existing `@react-native-async-storage/async-storage`, `expo-camera`, `expo-splash-screen`, etc.
+
+If unsure about a version, run `bunx expo install <package>` and let expo resolve it.
+
+Add new scripts (keep existing):
+```json
+"web:export": "expo export --platform web",
+"typecheck": "tsc --noEmit"
+```
+
 - [ ] **Step 6: Re-install with bun**
 
 Run: `bun install`
 Expected: installs the new deps, refreshes `bun.lock`. Some peer-dep warnings are fine.
 
-- [ ] **Step 7: Sanity-check rnr's default app compiles via web export**
+- [ ] **Step 7: Sanity-check the cherry-picked files compile**
 
 Run: `bunx expo export --platform web --output-dir dist-check --clear`
-Expected: produces `dist-check/` with `index.html`, an `_expo/static/js/web-*.js` bundle, and CSS. If a CSS-related error appears, the most likely cause is uniwind not being picked up — go to metro.config.js and confirm `withUniwindConfig` is the outermost wrapper.
+Expected: produces `dist-check/` with `index.html`, an `_expo/static/js/web-*.js` bundle, and CSS. If a CSS-related error appears, the most likely cause is uniwind not being picked up — go to `metro.config.js` and confirm `withUniwindConfig` is the outermost wrapper.
+
+Note: This web export will fail because we have not yet added an `app/` directory — see below.
+
+If it fails with "no app directory", that's expected for now. We add `app/` in Task 20 (root layout) and Tasks 15-19 (route files). The point of this sanity check is to verify the build pipeline (metro + uniwind + CSS extraction) is wired correctly. If the failure happens AFTER metro+CSS resolution (e.g. on the babel/webpack step that expects `app/_layout.tsx`), that's progress.
 
 Clean up: `rm -rf dist-check`
 
@@ -214,11 +263,11 @@ Clean up: `rm -rf dist-check`
 rm -rf tmp-scaffold
 ```
 
-- [ ] **Step 9: Commit the merge**
+- [ ] **Step 9: Commit the cherry-pick**
 
 ```bash
-git add app components global.css metro.config.js tailwind.config.js components.json lib package.json bun.lock tsconfig.json index.ts
-git -c user.name="claude" -c user.email="claude@local" commit -m "feat: scaffold rnr minimal-uniwind template"
+git add components/ui lib/utils.ts lib/theme.ts global.css metro.config.js components.json babel.config.js package.json bun.lock tsconfig.json index.ts
+git -c user.name="claude" -c user.email="claude@local" commit -m "feat: cherry-pick rnr minimal-uniwind scaffold into SDK 56 project"
 ```
 
 ### Task 3: Re-apply our `app.json` and add `expo-router` plugin
